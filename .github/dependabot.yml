@@ -1,0 +1,109 @@
+version: 2
+updates:
+  # pnpm dependencies (monorepo root - Dependabot auto-detects workspaces)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    groups:
+      # Production dependencies - patch only (safer)
+      production-patch:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+      # Development dependencies - minor and patch
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      # TypeScript ecosystem
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # ESLint ecosystem
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@eslint/*"
+          - "@typescript-eslint/*"
+      # React ecosystem
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router*"
+          - "@types/react*"
+      # Vite ecosystem
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vite-*"
+      # Hono ecosystem
+      hono:
+        patterns:
+          - "hono"
+          - "@hono/*"
+      # Cloudflare ecosystem
+      cloudflare:
+        patterns:
+          - "wrangler"
+          - "@cloudflare/*"
+      # Drizzle ecosystem
+      drizzle:
+        patterns:
+          - "drizzle-orm"
+          - "drizzle-kit"
+      # tRPC ecosystem
+      trpc:
+        patterns:
+          - "@trpc/*"
+      # Tailwind ecosystem
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "tailwind-*"
+          - "@tailwindcss/*"
+      # Zod and validation
+      validation:
+        patterns:
+          - "zod"
+          - "neverthrow"
+      # Zustand
+      zustand:
+        patterns:
+          - "zustand"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
+    # Ignore major updates for stability (review manually)
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"

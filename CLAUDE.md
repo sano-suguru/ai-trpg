@@ -19,6 +19,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Fix ALL errors AND warnings before considering a task complete
 - Treat warnings as errors - do not ignore or defer them
 
+### Git Commit Rules
+- Do NOT add Claude signature or Co-Authored-By footer to commit messages
+- Use conventional commits format: `type(scope): message`
+- Keep commit messages concise and in Japanese or English (match the project context)
+
 ## Project Overview
 
 AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG replay game. Players create characters, form parties, select dungeons, and the AI generates narrative sessions as TRPG replay text. The game emphasizes narrative and lore over numerical stats.
