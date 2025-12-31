@@ -1,24 +1,44 @@
 Sync CLAUDE.md with the current project state:
 
-1. Scan project structure and verify directory layout is accurate
-2. Remove outdated content (deleted files, changed patterns)
-3. Extract and add important design decisions from recent commits
-4. Streamline verbose descriptions for token efficiency
+1. Scan project structure and verify directory layout matches reality
+2. Remove outdated content (deleted files, renamed directories, deprecated patterns)
+3. Add important new information from recent commits (new conventions, architectural decisions)
+4. Fix inaccuracies and update stale references
 
 Display a diff of changes before applying.
 
 ---
 
-Accumulated fragmented additions cause CLAUDE.md to bloat with duplications, degrading quality. This increases token consumption and risks reducing Claude's instruction adherence.
+## Goal
 
-**Keeping CLAUDE.md small is the top priority.**
+The goal is **accuracy**, not compression. CLAUDE.md should reflect the current state of the project so that Claude can work effectively.
+
+## Guidelines
+
+**DO:**
+- Remove information about files/directories that no longer exist
+- Update paths and names that have changed
+- Add genuinely useful new conventions or patterns discovered
+- Consolidate duplicate information into single entries
+
+**DON'T:**
+- Remove useful information just to save tokens
+- Compress clear explanations into cryptic abbreviations
+- Delete context that helps Claude understand the project
+- Prioritize brevity over clarity
+
+## When consolidating
+
+Combine redundant entries, but preserve meaning:
+
 ```
-# Bad: Verbose
-"This project uses TypeScript.
-TypeScript is a language that provides type safety..."
+# Before (redundant)
+- Use TypeScript for all code
+- TypeScript is required
+- All files should be .ts or .tsx
 
-# Good: Concise
-"TypeScript strict mode. Type definitions consolidated under @types/."
+# After (consolidated)
+- TypeScript required for all code (.ts/.tsx)
 ```
 
-Prioritize "consolidation" over "appending" when updating.
+This removes duplication while keeping the information intact.

@@ -6,7 +6,8 @@
   "exports": {
     "./types/*": "./src/types/*.ts",
     "./schemas/*": "./src/schemas/*.ts",
-    "./constants/*": "./src/constants/*.ts"
+    "./constants/*": "./src/constants/*.ts",
+    "./lib/*": "./src/lib/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -17,5 +18,8 @@
     "@ai-trpg/typescript-config": "workspace:*",
     "eslint": "^8.57.0",
     "typescript": "5.5.4"
+  },
+  "dependencies": {
+    "neverthrow": "^8.2.0"
   }
 }

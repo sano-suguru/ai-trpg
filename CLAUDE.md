@@ -14,6 +14,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Never rely on assumptions or outdated knowledge - verify with official docs
 - Use official templates and examples when available
 
+### Code Quality First
+- Run `pnpm lint` and `pnpm typecheck` after making changes
+- Fix ALL errors AND warnings before considering a task complete
+- Treat warnings as errors - do not ignore or defer them
+
 ## Project Overview
 
 AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG replay game. Players create characters, form parties, select dungeons, and the AI generates narrative sessions as TRPG replay text. The game emphasizes narrative and lore over numerical stats.
@@ -92,10 +97,14 @@ pnpm typecheck
 - Templates in `api/services/llm/prompts/`
 
 ### Error Handling
-- Use `Result<T, E>` and `ResultAsync<T, E>` from neverthrow
+- Use `Result<T, E>` and `ResultAsync<T, E>` from neverthrow - **NEVER use try-catch for control flow**
 - Service layer returns Result types
-- API handlers convert to HTTP responses
+- API handlers convert to HTTP responses using `toErrorResponse()`
 - Domain errors defined in `shared/types/errors.ts`
+- Use `Errors.*` factory functions to create errors (e.g., `Errors.notFound('User', id)`)
+- Wrap external promises with `wrapPromise()`, `wrapDbOperation()`, or `wrapExternalCall()`
+- Use `fromNullable()` to convert nullable values to Result
+- Use `tryCatch()` only at boundaries with external libraries that throw
 
 ## Code Conventions
 
@@ -123,6 +132,10 @@ pnpm typecheck
 - Deep relative paths (`../../../`) - use `@/` alias
 - `any` type - use `unknown` with type guards
 - `console.log` in production code
+- `try-catch` for control flow - use Result types instead
+- `throw` statements - return `err()` instead
+- Ignoring lint warnings - always fix them
+- Dead code for "backward compatibility" - delete unused code immediately
 
 ## Game Domain Concepts
 
@@ -147,3 +160,5 @@ pnpm typecheck
 
 - [docs/design.md](docs/design.md) - Full game design specification (Japanese)
 - [docs/architecture.md](docs/architecture.md) - Technical architecture details
+- [packages/shared/src/types/errors.ts](packages/shared/src/types/errors.ts) - Domain error types and `Errors` factory
+- [packages/shared/src/lib/result.ts](packages/shared/src/lib/result.ts) - Result type utilities

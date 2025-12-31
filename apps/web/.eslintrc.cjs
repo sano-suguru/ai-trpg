@@ -1,5 +1,8 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   root: true,
-  extends: ["@ai-trpg/eslint-config/index.js"],
+  extends: ["@ai-trpg/eslint-config"],
+  env: {
+    browser: true,
+  },
 };
