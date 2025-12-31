@@ -201,3 +201,57 @@ pnpm typecheck
 - [packages/shared/src/lib/brand.ts](packages/shared/src/lib/brand.ts) - Branded type utility
 - [packages/shared/src/domain/](packages/shared/src/domain/) - Domain models (Character, primitives)
 - [apps/api/src/features/](apps/api/src/features/) - Vertical slice features (Character)
+
+## Development Workflow with Claude
+
+### Slash Commands
+
+| コマンド | 用途 |
+|----------|------|
+| `/implement <task-file>` | タスク仕様に基づいて実装 |
+| `/review <target>` | コードレビュー |
+| `/fix <issue>` | レビュー指摘・エラー修正 |
+| `/quality-check [scope]` | lint/typecheck/test実行 |
+| `/sync-claude-md` | CLAUDE.mdを現状に同期 |
+
+### Task Management
+
+**タスク仕様ファイル:**
+- 場所: `.claude/tasks/`
+- テンプレート: `.claude/tasks/TEMPLATE.md`
+- 命名: `feature-xxx.md`, `fix-xxx.md`, `refactor-xxx.md`
+
+**ワークフロー:**
+1. タスク仕様を `.claude/tasks/feature-xxx.md` に記述
+2. `/implement .claude/tasks/feature-xxx.md` で実装
+3. `/review` でレビュー
+4. `/fix` で指摘修正
+5. `/quality-check` で最終確認
+
+### Module Documentation
+
+各モジュールのREADMEを参照してコンテキストを把握:
+- [packages/shared/README.md](packages/shared/README.md) - 共有パッケージ
+- [apps/api/README.md](apps/api/README.md) - バックエンドAPI
+- [apps/web/README.md](apps/web/README.md) - フロントエンド
+
+### Parallel Development (git worktree)
+
+大きな機能を並列開発する場合:
+
+```bash
+# worktree作成
+git worktree add ../ai-trpg-feature-xxx feature/xxx
+
+# 別ウィンドウで作業
+cd ../ai-trpg-feature-xxx
+# Claudeセッション開始
+
+# 完了後
+git worktree remove ../ai-trpg-feature-xxx
+```
+
+メリット:
+- モジュール間のコンテキスト分離
+- 並列でClaude実行可能
+- コンフリクト最小化
