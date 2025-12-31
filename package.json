@@ -1,16 +1,18 @@
 {
+  "name": "ai-trpg",
   "private": true,
+  "packageManager": "pnpm@8.15.6",
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
+    "build": "turbo run build",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "turbo": "^2.7.2"
-  },
-  "packageManager": "pnpm@8.15.6",
-  "name": "with-vite"
+  }
 }

@@ -1,4 +1,10 @@
 {
-  "extends": "@repo/typescript-config/vite.json",
+  "extends": "@ai-trpg/typescript-config/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
   "include": ["src"]
 }

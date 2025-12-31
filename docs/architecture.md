@@ -143,13 +143,17 @@ User → React UI → Hono API → LLM Gateway
 pnpm workspaces + Turborepo によるモノレポ構成を採用。
 
 ```
-packages/
-├── shared/   # 共有コード（型、スキーマ、ユーティリティ）
-├── web/      # フロントエンド（React + Vite）
+apps/
+├── web/      # フロントエンド（React + Vite + Tailwind + shadcn/ui）
 └── api/      # バックエンド（Hono + Cloudflare Workers）
+packages/
+├── shared/           # 共有コード（型、スキーマ、ユーティリティ）
+├── typescript-config/  # 共有TypeScript設定
+└── eslint-config/      # 共有ESLint設定
 ```
 
 **採用理由:**
+- `apps/` と `packages/` の分離でデプロイ対象と共有ライブラリを明確に区別
 - 型定義を一箇所で管理し、フロント・バックエンドで共有
 - 独立したデプロイが可能（webとapiは別々にデプロイ）
 - 将来のパッケージ追加が容易（Phase 2以降で `community/`, `guild/` など）
@@ -169,12 +173,12 @@ shared ← api
 
 | 種類 | 配置先 | 理由 |
 |------|--------|------|
-| **ドメイン型** | `shared/types/` | フロント・バックエンド共通で使用 |
-| **Zodスキーマ** | `shared/schemas/` | バリデーションロジックを共有 |
-| **マスターデータ** | `shared/constants/` | 断片・行動指針などの選択肢 |
-| **API固有の型** | `api/types/` | Cloudflare Bindings等 |
-| **UIコンポーネント** | `web/components/` | 機能ドメイン別にサブディレクトリ |
-| **ビジネスロジック** | `api/services/` | ドメイン別にサブディレクトリ |
+| **ドメイン型** | `packages/shared/types/` | フロント・バックエンド共通で使用 |
+| **Zodスキーマ** | `packages/shared/schemas/` | バリデーションロジックを共有 |
+| **マスターデータ** | `packages/shared/constants/` | 断片・行動指針などの選択肢 |
+| **API固有の型** | `apps/api/types/` | Cloudflare Bindings等 |
+| **UIコンポーネント** | `apps/web/components/` | 機能ドメイン別にサブディレクトリ |
+| **ビジネスロジック** | `apps/api/services/` | ドメイン別にサブディレクトリ |
 
 ### 命名規約
 
@@ -230,12 +234,12 @@ shared ← api
 - `--destructive: 0 60% 40%` - 乾いた血（危険・警告）
 - 彩度を抑え、灰がかったトーンで統一
 
-テーマのCSS変数定義は `packages/web/styles/globals.css` を参照。
+テーマのCSS変数定義は `apps/web/src/style.css` を参照。
 
 ### ディレクトリ構成
 
 ```
-packages/web/components/
+apps/web/src/components/
 ├── ui/           # shadcn/uiコンポーネント（自動生成、カスタマイズ可）
 ├── character/    # キャラクター関連（CharacterCard, FragmentSelector等）
 ├── dungeon/      # ダンジョン関連
@@ -333,7 +337,7 @@ packages/web/components/
 
 **Drizzle ORM を採用。**
 
-スキーマ定義は `packages/shared/db/schema/` に配置。Drizzle Kitでマイグレーション生成。
+スキーマ定義は `packages/shared/src/db/schema/` に配置。Drizzle Kitでマイグレーション生成。
 
 **設計原則:**
 
@@ -483,7 +487,7 @@ tRPCはリクエスト/レスポンス型。リアルタイム通信は別途対
 5. 履歴更新               - キャラのhistory/relationships更新
 ```
 
-プロンプトテンプレートは `api/services/llm/prompts/` に配置。
+プロンプトテンプレートは `apps/api/src/services/llm/prompts/` に配置。
 
 ---
 
