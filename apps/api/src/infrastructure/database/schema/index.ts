@@ -1,0 +1,5 @@
+/**
+ * DBスキーマのバレルエクスポート
+ */
+
+export * from "./characters";

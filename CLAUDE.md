@@ -78,6 +78,27 @@ pnpm typecheck
 
 ## Architecture Decisions
 
+### Functional Domain Modeling (FDM)
+- **Branded Types**: Nominal typing for type-safe IDs (`UserId`, `CharacterId`, etc.) in `shared/domain/primitives/`
+- **Smart Constructors**: All domain objects created via factory functions that return `Result<T, ValidationError>`
+- **Immutable by default**: All domain types use `readonly` modifiers
+- **Discriminated Unions**: Character states, errors represented as tagged unions
+
+### Vertical Slice Architecture
+- Feature-based organization in `api/features/{domain}/`
+- Each feature contains: `router.ts`, `repository.ts`, `mapper.ts`, `useCases/`
+- Dependencies injected via function parameters (no DI container)
+- Clear separation: UseCase → Repository (port) → DB Adapter
+
+### Domain Model Location
+| Layer | Location |
+|-------|----------|
+| Domain primitives (IDs, branded types) | `shared/domain/primitives/` |
+| Domain entities & value objects | `shared/domain/{entity}/` |
+| Zod schemas (API input validation) | `shared/schemas/` |
+| Feature slices (API) | `api/features/{domain}/` |
+| DB schema (Drizzle) | `api/infrastructure/database/schema/` |
+
 ### Data Model
 - Normalized tables for users, characters, dungeons, sessions
 - JSONB for flexible nested data (fragments, directives, dungeon layers, session history)
@@ -89,6 +110,7 @@ pnpm typecheck
 - `publicProcedure` for unauthenticated endpoints
 - `protectedProcedure` for authenticated endpoints
 - SSE for real-time session generation progress
+- Routers in `api/features/{domain}/router.ts`
 
 ### LLM Integration
 - Multi-provider abstraction with fallback strategy
@@ -121,11 +143,19 @@ pnpm typecheck
 ### File Placement
 | Type | Location |
 |------|----------|
-| Domain types | `shared/types/` |
+| Domain models | `shared/domain/{entity}/` |
+| Domain primitives (IDs) | `shared/domain/primitives/` |
+| Error types | `shared/types/` |
 | Zod schemas | `shared/schemas/` |
 | Master data | `shared/constants/` |
 | UI components | `web/components/{domain}/` |
-| Business logic | `api/services/{domain}/` |
+| Feature slices | `api/features/{domain}/` |
+| DB schema | `api/infrastructure/database/schema/` |
+
+### Import Style
+- **No file extensions** in import statements - bundler handles resolution
+- Use `import { foo } from "./bar"` not `import { foo } from "./bar.js"`
+- This project uses `moduleResolution: "Bundler"` (Vite/esbuild)
 
 ### Prohibited
 - Circular dependencies
@@ -136,6 +166,7 @@ pnpm typecheck
 - `throw` statements - return `err()` instead
 - Ignoring lint warnings - always fix them
 - Dead code for "backward compatibility" - delete unused code immediately
+- File extensions (`.js`/`.ts`) in import statements
 
 ## Game Domain Concepts
 
@@ -162,3 +193,6 @@ pnpm typecheck
 - [docs/architecture.md](docs/architecture.md) - Technical architecture details
 - [packages/shared/src/types/errors.ts](packages/shared/src/types/errors.ts) - Domain error types and `Errors` factory
 - [packages/shared/src/lib/result.ts](packages/shared/src/lib/result.ts) - Result type utilities
+- [packages/shared/src/lib/brand.ts](packages/shared/src/lib/brand.ts) - Branded type utility
+- [packages/shared/src/domain/](packages/shared/src/domain/) - Domain models (Character, primitives)
+- [apps/api/src/features/](apps/api/src/features/) - Vertical slice features (Character)

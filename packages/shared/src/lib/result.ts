@@ -13,8 +13,8 @@ import {
   okAsync,
   errAsync,
 } from "neverthrow";
-import type { AppError, DatabaseError, ConnectionError } from "../types/errors.js";
-import { Errors } from "../types/errors.js";
+import type { AppError, DatabaseError, ConnectionError } from "../types/errors";
+import { Errors } from "../types/errors";
 
 // ========================================
 // Re-exports from neverthrow

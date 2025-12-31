@@ -13,14 +13,22 @@
   },
   "dependencies": {
     "@ai-trpg/shared": "workspace:*",
-    "hono": "^4.11.3"
+    "@hono/trpc-server": "^0.4.1",
+    "@trpc/server": "^11.8.1",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.3",
+    "neverthrow": "^8.2.0",
+    "postgres": "^3.4.7",
+    "superjson": "^2.2.6",
+    "zod": "^4.3.2"
   },
   "devDependencies": {
     "@ai-trpg/eslint-config": "workspace:*",
     "@ai-trpg/typescript-config": "workspace:*",
     "@cloudflare/workers-types": "^4.20251231.0",
+    "drizzle-kit": "^0.31.8",
     "eslint": "^8.57.0",
-    "typescript": "5.5.4",
+    "typescript": "5.9.3",
     "wrangler": "^4.4.0"
   }
 }

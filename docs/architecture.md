@@ -173,12 +173,15 @@ shared ← api
 
 | 種類 | 配置先 | 理由 |
 |------|--------|------|
-| **ドメイン型** | `packages/shared/types/` | フロント・バックエンド共通で使用 |
-| **Zodスキーマ** | `packages/shared/schemas/` | バリデーションロジックを共有 |
+| **ドメインモデル** | `packages/shared/domain/{entity}/` | フロント・バックエンド共通で使用。FDMによる型安全なモデル |
+| **ドメインプリミティブ** | `packages/shared/domain/primitives/` | Branded ID型（UserId, CharacterId等） |
+| **エラー型** | `packages/shared/types/` | ドメインエラーの定義 |
+| **Zodスキーマ** | `packages/shared/schemas/` | API入力バリデーション用 |
 | **マスターデータ** | `packages/shared/constants/` | 断片・行動指針などの選択肢 |
+| **Feature Slice** | `apps/api/features/{domain}/` | UseCase, Repository, Router, Mapper |
+| **DBスキーマ** | `apps/api/infrastructure/database/schema/` | Drizzle ORMスキーマ定義 |
 | **API固有の型** | `apps/api/types/` | Cloudflare Bindings等 |
 | **UIコンポーネント** | `apps/web/components/` | 機能ドメイン別にサブディレクトリ |
-| **ビジネスロジック** | `apps/api/services/` | ドメイン別にサブディレクトリ |
 
 ### 命名規約
 
@@ -198,6 +201,69 @@ shared ← api
 - **相対パス深掘り禁止**: `../../../` のような深い相対パスは使用しない（エイリアス `@/` を使用）
 - **any型の禁止**: 原則 `unknown` を使用し、型ガードで絞り込む
 - **console.log の本番残留禁止**: ロガーを使用する
+
+---
+
+## Functional Domain Modeling (FDM)
+
+### なぜFDMか
+
+**解決したい課題:**
+- TypeScriptの構造的型付けでは、同じ形状の型が区別できない（`UserId`と`CharacterId`が両方`string`だと混同可能）
+- オブジェクトの不正な状態を型レベルで防ぎたい
+- ドメインロジックをUIやインフラから分離したい
+
+**検討した選択肢:**
+
+| 選択肢 | 評価 |
+|--------|------|
+| **素のTypeScript** | ID混同バグが発生しやすい。バリデーション漏れがコンパイル時に検出不可 |
+| **fp-ts** | 強力だが学習コストが高い。型定義が複雑 |
+| **Branded Types + neverthrow** | **採用**。最小限のボイラープレートで公称型とResult型を実現 |
+
+### 設計原則
+
+| 原則 | 説明 |
+|------|------|
+| **Branded Types（公称型）** | `Brand<string, "UserId">` で型安全なID |
+| **Smart Constructors** | ファクトリ関数が `Result<T, ValidationError>` を返す |
+| **Immutable by default** | 全ての型に `readonly` 修飾子 |
+| **Make Illegal States Unrepresentable** | Discriminated Unionでありえない状態を型で排除 |
+
+---
+
+## Vertical Slice Architecture
+
+### なぜVertical Sliceか
+
+**解決したい課題:**
+- レイヤードアーキテクチャでは機能追加時に複数レイヤーを横断して変更が必要
+- 機能間の依存関係が見えにくい
+- テスト時にモック対象が多くなる
+
+**検討した選択肢:**
+
+| 選択肢 | 評価 |
+|--------|------|
+| **レイヤードアーキテクチャ** | 機能追加時に `controllers/`, `services/`, `repositories/` 全てを変更。凝集度が低い |
+| **Clean Architecture** | 強力だが、MVPには過剰。インターフェース定義のボイラープレートが多い |
+| **Vertical Slice** | **採用**。機能単位でコードを凝集。変更時の影響範囲が明確 |
+
+### 設計原則
+
+| 原則 | 説明 |
+|------|------|
+| **Feature単位で凝集** | 1つの機能に必要なコードを1ディレクトリに集約 |
+| **依存性の注入** | UseCaseはRepositoryインターフェースに依存。実装は外から注入 |
+| **インフラは外側** | DB接続、外部API呼び出しは `infrastructure/` に分離 |
+
+### Feature Slice構成
+
+各Feature（例: `character/`）は以下で構成:
+- `router.ts` - tRPCルーター定義
+- `repository.ts` - Repositoryインターフェース + 実装
+- `mapper.ts` - DB行 ⇔ ドメインモデル変換
+- `useCases/` - 各ユースケース（create, get, list, update, delete）
 
 ---
 
