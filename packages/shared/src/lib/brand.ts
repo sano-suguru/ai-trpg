@@ -61,7 +61,7 @@ export type Brand<T, TBrand extends string> = T & {
  * ```
  */
 export function asBrand<TBrand extends string, TBase = string>(
-  value: TBase
+  value: TBase,
 ): Brand<TBase, TBrand> {
   return value as Brand<TBase, TBrand>;
 }
@@ -107,7 +107,7 @@ export type BrandOf<T> = T extends Brand<unknown, infer B> ? B : never;
  * ```
  */
 export function createBrandGuard<T extends Brand<unknown, string>>(
-  validator: (value: unknown) => value is Unbrand<T>
+  validator: (value: unknown) => value is Unbrand<T>,
 ): (value: unknown) => value is T {
   return (value): value is T => validator(value);
 }

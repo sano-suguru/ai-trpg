@@ -2,7 +2,14 @@
  * キャラクターテーブル定義（Drizzle）
  */
 
-import { pgTable, uuid, text, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  boolean,
+  jsonb,
+} from "drizzle-orm/pg-core";
 
 // ========================================
 // Characters Table
@@ -28,19 +35,38 @@ export const characters = pgTable("characters", {
   // JSONB fields
   fragments: jsonb("fragments").notNull().$type<CharacterFragmentsJson>(),
   directives: jsonb("directives").notNull().$type<CharacterDirectivesJson>(),
-  voiceSamples: jsonb("voice_samples").notNull().$type<VoiceSampleJson[]>().default([]),
+  voiceSamples: jsonb("voice_samples")
+    .notNull()
+    .$type<VoiceSampleJson[]>()
+    .default([]),
   history: jsonb("history").notNull().$type<HistoryEntryJson[]>().default([]),
-  relationships: jsonb("relationships").notNull().$type<RelationshipJson[]>().default([]),
-  currentWounds: jsonb("current_wounds").notNull().$type<string[]>().default([]),
-  currentQuestions: jsonb("current_questions").notNull().$type<string[]>().default([]),
+  relationships: jsonb("relationships")
+    .notNull()
+    .$type<RelationshipJson[]>()
+    .default([]),
+  currentWounds: jsonb("current_wounds")
+    .notNull()
+    .$type<string[]>()
+    .default([]),
+  currentQuestions: jsonb("current_questions")
+    .notNull()
+    .$type<string[]>()
+    .default([]),
 
   // Settings
-  lending: text("lending").notNull().default("safe").$type<"all" | "safe" | "private">(),
+  lending: text("lending")
+    .notNull()
+    .default("safe")
+    .$type<"all" | "safe" | "private">(),
   isPublic: boolean("is_public").notNull().default(false),
 
   // Timestamps
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 // ========================================

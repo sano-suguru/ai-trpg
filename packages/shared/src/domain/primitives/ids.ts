@@ -47,7 +47,7 @@ export function createUserId(value: string): Result<UserId, ValidationError> {
  * CharacterIdを生成（バリデーション付き）
  */
 export function createCharacterId(
-  value: string
+  value: string,
 ): Result<CharacterId, ValidationError> {
   if (!isValidUuid(value)) {
     return err(Errors.validation("無効なキャラクターIDです", "characterId"));
@@ -59,7 +59,7 @@ export function createCharacterId(
  * DungeonIdを生成（バリデーション付き）
  */
 export function createDungeonId(
-  value: string
+  value: string,
 ): Result<DungeonId, ValidationError> {
   if (!isValidUuid(value)) {
     return err(Errors.validation("無効なダンジョンIDです", "dungeonId"));
@@ -71,7 +71,7 @@ export function createDungeonId(
  * SessionIdを生成（バリデーション付き）
  */
 export function createSessionId(
-  value: string
+  value: string,
 ): Result<SessionId, ValidationError> {
   if (!isValidUuid(value)) {
     return err(Errors.validation("無効なセッションIDです", "sessionId"));
@@ -83,7 +83,7 @@ export function createSessionId(
  * ReplayIdを生成（バリデーション付き）
  */
 export function createReplayId(
-  value: string
+  value: string,
 ): Result<ReplayId, ValidationError> {
   if (!isValidUuid(value)) {
     return err(Errors.validation("無効なリプレイIDです", "replayId"));

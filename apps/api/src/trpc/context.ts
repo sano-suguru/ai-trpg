@@ -67,7 +67,7 @@ export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
  * 認証済みコンテキストの型ガード
  */
 export function isAuthenticated(
-  ctx: TRPCContext
+  ctx: TRPCContext,
 ): ctx is AuthenticatedTRPCContext {
   return ctx.user !== null;
 }

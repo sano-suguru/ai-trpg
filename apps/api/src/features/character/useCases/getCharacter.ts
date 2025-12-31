@@ -27,7 +27,7 @@ export interface GetCharacterDeps {
 export function getCharacterUseCase(deps: GetCharacterDeps) {
   return (
     userId: UserId,
-    characterId: CharacterId
+    characterId: CharacterId,
   ): ResultAsync<Character, AppError> => {
     return deps.repository.findById(characterId).andThen((character) => {
       if (!character) {
@@ -36,7 +36,9 @@ export function getCharacterUseCase(deps: GetCharacterDeps) {
 
       // 所有者チェック
       if (character.ownerId !== userId) {
-        return errAsync(Errors.forbidden("このキャラクターへのアクセス権がありません"));
+        return errAsync(
+          Errors.forbidden("このキャラクターへのアクセス権がありません"),
+        );
       }
 
       return okAsync(character);

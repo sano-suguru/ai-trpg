@@ -5,14 +5,7 @@
  * 外部ライブラリの例外をResultに変換するためのユーティリティを提供
  */
 
-import {
-  Result,
-  ResultAsync,
-  ok,
-  err,
-  okAsync,
-  errAsync,
-} from "neverthrow";
+import { Result, ResultAsync, ok, err, okAsync, errAsync } from "neverthrow";
 import type { AppError, DatabaseError, ConnectionError } from "../types/errors";
 import { Errors } from "../types/errors";
 
@@ -54,7 +47,7 @@ export type AppResultAsync<T> = ResultAsync<T, AppError>;
  */
 export function wrapPromise<T, E>(
   promise: Promise<T>,
-  errorMapper: (error: unknown) => E
+  errorMapper: (error: unknown) => E,
 ): ResultAsync<T, E> {
   return ResultAsync.fromPromise(promise, errorMapper);
 }
@@ -72,10 +65,10 @@ export function wrapPromise<T, E>(
  */
 export function wrapDbOperation<T>(
   promise: Promise<T>,
-  operation: DatabaseError["operation"]
+  operation: DatabaseError["operation"],
 ): ResultAsync<T, DatabaseError> {
   return ResultAsync.fromPromise(promise, (error) =>
-    Errors.database(operation, String(error))
+    Errors.database(operation, String(error)),
   );
 }
 
@@ -92,10 +85,10 @@ export function wrapDbOperation<T>(
  */
 export function wrapExternalCall<T>(
   promise: Promise<T>,
-  serviceName: string
+  serviceName: string,
 ): ResultAsync<T, ConnectionError> {
   return ResultAsync.fromPromise(promise, (error) =>
-    Errors.connection(serviceName, String(error))
+    Errors.connection(serviceName, String(error)),
   );
 }
 
@@ -119,7 +112,7 @@ export function wrapExternalCall<T>(
  * ```
  */
 export function combineAllErrors<T, E>(
-  results: Result<T, E>[]
+  results: Result<T, E>[],
 ): Result<readonly T[], E[]> {
   return Result.combineWithAllErrors(results);
 }
@@ -205,7 +198,7 @@ export function toErrorResponse(error: AppError): {
  */
 export function fromNullable<T, E>(
   value: T | null | undefined,
-  error: E
+  error: E,
 ): Result<T, E> {
   return value != null ? ok(value) : err(error);
 }
@@ -225,7 +218,7 @@ export function fromNullable<T, E>(
 export function fromPredicate<T, E>(
   condition: boolean,
   onTrue: () => T,
-  onFalse: () => E
+  onFalse: () => E,
 ): Result<T, E> {
   return condition ? ok(onTrue()) : err(onFalse());
 }
@@ -244,7 +237,7 @@ export function fromPredicate<T, E>(
  */
 export function tryCatch<T, E>(
   fn: () => T,
-  errorMapper: (error: unknown) => E
+  errorMapper: (error: unknown) => E,
 ): Result<T, E> {
   try {
     return ok(fn());

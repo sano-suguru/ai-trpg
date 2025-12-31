@@ -31,7 +31,10 @@ export interface SessionExpiredError extends BaseError {
   readonly code: "SESSION_EXPIRED";
 }
 
-export type AuthError = UnauthorizedError | ForbiddenError | SessionExpiredError;
+export type AuthError =
+  | UnauthorizedError
+  | ForbiddenError
+  | SessionExpiredError;
 
 // ========================================
 // Validation Errors
@@ -69,7 +72,10 @@ export interface ResourceLimitError extends BaseError {
   readonly limit: number;
 }
 
-export type ResourceError = NotFoundError | AlreadyExistsError | ResourceLimitError;
+export type ResourceError =
+  | NotFoundError
+  | AlreadyExistsError
+  | ResourceLimitError;
 
 // ========================================
 // Database Errors
@@ -201,7 +207,7 @@ export const Errors = {
   }),
 
   sessionExpired: (
-    message = "セッションが期限切れです"
+    message = "セッションが期限切れです",
   ): SessionExpiredError => ({
     code: "SESSION_EXPIRED",
     message,
@@ -211,7 +217,7 @@ export const Errors = {
   validation: (
     message: string,
     field?: string,
-    details?: Record<string, string>
+    details?: Record<string, string>,
   ): ValidationError => ({
     code: "VALIDATION_ERROR",
     message,
@@ -244,7 +250,7 @@ export const Errors = {
   resourceLimit: (
     resource: string,
     limit: number,
-    message?: string
+    message?: string,
   ): ResourceLimitError => ({
     code: "RESOURCE_LIMIT",
     resource,
@@ -255,7 +261,7 @@ export const Errors = {
   // Database
   database: (
     operation: DatabaseError["operation"],
-    message?: string
+    message?: string,
   ): DatabaseError => ({
     code: "DATABASE_ERROR",
     operation,
@@ -275,10 +281,7 @@ export const Errors = {
     message: message ?? `${provider}でエラーが発生しました`,
   }),
 
-  llmRateLimit: (
-    provider: string,
-    retryAfter?: number
-  ): LLMRateLimitError => ({
+  llmRateLimit: (provider: string, retryAfter?: number): LLMRateLimitError => ({
     code: "LLM_RATE_LIMIT",
     provider,
     retryAfter,
@@ -290,7 +293,7 @@ export const Errors = {
   llmGeneration: (
     provider: string,
     stage: LLMGenerationError["stage"],
-    message?: string
+    message?: string,
   ): LLMGenerationError => ({
     code: "LLM_GENERATION_ERROR",
     provider,
@@ -305,7 +308,9 @@ export const Errors = {
     message: `キャラクター（ID: ${characterId}）が見つかりません`,
   }),
 
-  characterNotBorrowable: (characterId: string): CharacterNotBorrowableError => ({
+  characterNotBorrowable: (
+    characterId: string,
+  ): CharacterNotBorrowableError => ({
     code: "CHARACTER_NOT_BORROWABLE",
     characterId,
     lendingSetting: "private",
@@ -313,7 +318,7 @@ export const Errors = {
   }),
 
   invalidPartyComposition: (
-    reason: InvalidPartyCompositionError["reason"]
+    reason: InvalidPartyCompositionError["reason"],
   ): InvalidPartyCompositionError => {
     const messages = {
       too_few: "パーティメンバーが少なすぎます",
@@ -349,11 +354,12 @@ export const Errors = {
 
   sessionGeneration: (
     stage: SessionGenerationError["stage"],
-    message?: string
+    message?: string,
   ): SessionGenerationError => ({
     code: "SESSION_GENERATION_ERROR",
     stage,
-    message: message ?? `セッション生成の${stage}フェーズでエラーが発生しました`,
+    message:
+      message ?? `セッション生成の${stage}フェーズでエラーが発生しました`,
   }),
 } as const;
 

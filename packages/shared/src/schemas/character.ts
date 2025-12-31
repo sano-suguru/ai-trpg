@@ -31,7 +31,10 @@ export const uuidSchema = z.string().uuid();
 export const characterNameSchema = z
   .string()
   .min(NAME_MIN_LENGTH, "キャラクター名は必須です")
-  .max(NAME_MAX_LENGTH, `キャラクター名は${NAME_MAX_LENGTH}文字以内にしてください`)
+  .max(
+    NAME_MAX_LENGTH,
+    `キャラクター名は${NAME_MAX_LENGTH}文字以内にしてください`,
+  )
   .transform((v) => v.trim());
 
 /** キャラクター称号 */
@@ -43,20 +46,29 @@ export const characterTitleSchema = z
 /** 経歴 */
 export const biographySchema = z
   .string()
-  .max(BIOGRAPHY_MAX_LENGTH, `経歴は${BIOGRAPHY_MAX_LENGTH}文字以内にしてください`);
+  .max(
+    BIOGRAPHY_MAX_LENGTH,
+    `経歴は${BIOGRAPHY_MAX_LENGTH}文字以内にしてください`,
+  );
 
 /** 断片テキスト */
 export const fragmentTextSchema = z
   .string()
   .min(FRAGMENT_MIN_LENGTH, `断片は${FRAGMENT_MIN_LENGTH}文字以上必要です`)
-  .max(FRAGMENT_MAX_LENGTH, `断片は${FRAGMENT_MAX_LENGTH}文字以内にしてください`)
+  .max(
+    FRAGMENT_MAX_LENGTH,
+    `断片は${FRAGMENT_MAX_LENGTH}文字以内にしてください`,
+  )
   .transform((v) => v.trim());
 
 /** 行動指針テキスト */
 export const directiveTextSchema = z
   .string()
   .min(DIRECTIVE_MIN_LENGTH, "行動指針は必須です")
-  .max(DIRECTIVE_MAX_LENGTH, `行動指針は${DIRECTIVE_MAX_LENGTH}文字以内にしてください`)
+  .max(
+    DIRECTIVE_MAX_LENGTH,
+    `行動指針は${DIRECTIVE_MAX_LENGTH}文字以内にしてください`,
+  )
   .transform((v) => v.trim());
 
 /** 公開設定 */

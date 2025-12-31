@@ -23,7 +23,10 @@ export interface DeleteCharacterDeps {
  * キャラクター削除ユースケース
  */
 export function deleteCharacterUseCase(deps: DeleteCharacterDeps) {
-  return (userId: UserId, characterId: CharacterId): ResultAsync<void, AppError> => {
+  return (
+    userId: UserId,
+    characterId: CharacterId,
+  ): ResultAsync<void, AppError> => {
     return deps.repository.findById(characterId).andThen((character) => {
       if (!character) {
         return err(Errors.notFound("Character", characterId as string));
@@ -31,7 +34,9 @@ export function deleteCharacterUseCase(deps: DeleteCharacterDeps) {
 
       // 所有者チェック
       if (character.ownerId !== userId) {
-        return err(Errors.forbidden("このキャラクターへのアクセス権がありません"));
+        return err(
+          Errors.forbidden("このキャラクターへのアクセス権がありません"),
+        );
       }
 
       // 削除

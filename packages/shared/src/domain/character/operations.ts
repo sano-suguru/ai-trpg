@@ -46,7 +46,7 @@ export interface UpdateCharacterInput {
  */
 export function updateCharacter(
   character: Character,
-  input: UpdateCharacterInput
+  input: UpdateCharacterInput,
 ): Result<Character, ValidationError> {
   let newName = character.name;
   let newTitle = character.title;
@@ -108,7 +108,7 @@ export function updateCharacter(
  */
 export function addHistoryEntry(
   character: Character,
-  entry: Omit<HistoryEntry, "sessionId"> & { sessionId: string }
+  entry: Omit<HistoryEntry, "sessionId"> & { sessionId: string },
 ): Character {
   const historyEntry: HistoryEntry = {
     ...entry,
@@ -127,7 +127,7 @@ export function addHistoryEntry(
  */
 export function updateCurrentWounds(
   character: Character,
-  wounds: readonly string[]
+  wounds: readonly string[],
 ): Character {
   return {
     ...character,
@@ -167,7 +167,7 @@ export function healWound(character: Character, woundIndex: number): Character {
  */
 export function upsertRelationship(
   character: Character,
-  relationship: Omit<Relationship, "characterId"> & { characterId: string }
+  relationship: Omit<Relationship, "characterId"> & { characterId: string },
 ): Character {
   const newRelationship: Relationship = {
     ...relationship,
@@ -175,7 +175,7 @@ export function upsertRelationship(
   };
 
   const existingIndex = character.relationships.findIndex(
-    (r: Relationship) => r.characterId === newRelationship.characterId
+    (r: Relationship) => r.characterId === newRelationship.characterId,
   );
 
   const newRelationships =
@@ -199,12 +199,12 @@ export function upsertRelationship(
  */
 export function removeRelationship(
   character: Character,
-  targetCharacterId: CharacterId
+  targetCharacterId: CharacterId,
 ): Character {
   return {
     ...character,
     relationships: character.relationships.filter(
-      (r) => r.characterId !== targetCharacterId
+      (r) => r.characterId !== targetCharacterId,
     ),
     updatedAt: new Date(),
   };
@@ -220,7 +220,7 @@ export function removeRelationship(
  * プライベート設定または非公開の場合はエラー
  */
 export function toBorrowableView(
-  character: Character
+  character: Character,
 ): Result<BorrowableCharacter, CharacterError> {
   if (character.lending === "private") {
     return err(Errors.characterNotBorrowable(character.id as string));
@@ -262,7 +262,7 @@ export function canParticipateInSession(character: Character): boolean {
  */
 export function canDieInSession(
   character: BorrowableCharacter | Character,
-  isOwner: boolean
+  isOwner: boolean,
 ): boolean {
   if (isOwner) return true;
 
@@ -279,7 +279,7 @@ export function canDieInSession(
  */
 export function canHavePermanentChanges(
   character: BorrowableCharacter | Character,
-  isOwner: boolean
+  isOwner: boolean,
 ): boolean {
   if (isOwner) return true;
 
@@ -318,7 +318,7 @@ export interface CreateCharacterInput {
 export function createCharacter(
   id: CharacterId,
   ownerId: UserId,
-  input: CreateCharacterInput
+  input: CreateCharacterInput,
 ): Result<Character, ValidationError> {
   const nameResult = createCharacterName(input.name);
   if (nameResult.isErr()) return err(nameResult.error);

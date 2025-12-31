@@ -23,7 +23,7 @@ const NAME_MIN_LENGTH = 1;
 const NAME_MAX_LENGTH = 50;
 
 export function createCharacterName(
-  value: string
+  value: string,
 ): Result<CharacterName, ValidationError> {
   const trimmed = value.trim();
 
@@ -35,8 +35,8 @@ export function createCharacterName(
     return err(
       Errors.validation(
         `キャラクター名は${NAME_MAX_LENGTH}文字以内にしてください`,
-        "name"
-      )
+        "name",
+      ),
     );
   }
 
@@ -49,7 +49,7 @@ export type CharacterTitle = Brand<string, "CharacterTitle">;
 const TITLE_MAX_LENGTH = 100;
 
 export function createCharacterTitle(
-  value: string
+  value: string,
 ): Result<CharacterTitle, ValidationError> {
   const trimmed = value.trim();
 
@@ -57,8 +57,8 @@ export function createCharacterTitle(
     return err(
       Errors.validation(
         `称号は${TITLE_MAX_LENGTH}文字以内にしてください`,
-        "title"
-      )
+        "title",
+      ),
     );
   }
 
@@ -71,14 +71,14 @@ export type Biography = Brand<string, "Biography">;
 const BIOGRAPHY_MAX_LENGTH = 2000;
 
 export function createBiography(
-  value: string
+  value: string,
 ): Result<Biography, ValidationError> {
   if (value.length > BIOGRAPHY_MAX_LENGTH) {
     return err(
       Errors.validation(
         `経歴は${BIOGRAPHY_MAX_LENGTH}文字以内にしてください`,
-        "biography"
-      )
+        "biography",
+      ),
     );
   }
 
@@ -109,14 +109,14 @@ export function isLendingSetting(value: unknown): value is LendingSetting {
 }
 
 export function createLendingSetting(
-  value: string
+  value: string,
 ): Result<LendingSetting, ValidationError> {
   if (!isLendingSetting(value)) {
     return err(
       Errors.validation(
         "無効な公開設定です。all, safe, private のいずれかを指定してください",
-        "lending"
-      )
+        "lending",
+      ),
     );
   }
   return ok(value);
@@ -227,7 +227,7 @@ export interface BorrowableCharacter {
 // ========================================
 
 export function isDraftCharacter(
-  c: DraftCharacter | Character
+  c: DraftCharacter | Character,
 ): c is DraftCharacter {
   return c._tag === "DraftCharacter";
 }
@@ -237,7 +237,7 @@ export function isCharacter(c: DraftCharacter | Character): c is Character {
 }
 
 export function isBorrowable(
-  c: Character
+  c: Character,
 ): c is Character & { lending: Exclude<LendingSetting, "private"> } {
   return c.lending !== "private" && c.isPublic;
 }

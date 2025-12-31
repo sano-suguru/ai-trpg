@@ -42,10 +42,18 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
     generateId: deps.generateId,
   });
   const getCharacter = getCharacterUseCase({ repository: deps.repository });
-  const listMyCharacters = listMyCharactersUseCase({ repository: deps.repository });
-  const listBorrowable = listBorrowableCharactersUseCase({ repository: deps.repository });
-  const updateCharacter = updateCharacterUseCase({ repository: deps.repository });
-  const deleteCharacter = deleteCharacterUseCase({ repository: deps.repository });
+  const listMyCharacters = listMyCharactersUseCase({
+    repository: deps.repository,
+  });
+  const listBorrowable = listBorrowableCharactersUseCase({
+    repository: deps.repository,
+  });
+  const updateCharacter = updateCharacterUseCase({
+    repository: deps.repository,
+  });
+  const deleteCharacter = deleteCharacterUseCase({
+    repository: deps.repository,
+  });
 
   return router({
     /**
@@ -132,7 +140,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
         z.object({
           id: z.string().uuid(),
           data: updateCharacterSchema,
-        })
+        }),
       )
       .mutation(async ({ ctx, input }) => {
         const characterIdResult = createCharacterId(input.id);
@@ -146,7 +154,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
         const result = await updateCharacter(
           ctx.user.id,
           characterIdResult.value,
-          input.data
+          input.data,
         );
 
         if (result.isErr()) {
@@ -173,7 +181,10 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
           });
         }
 
-        const result = await deleteCharacter(ctx.user.id, characterIdResult.value);
+        const result = await deleteCharacter(
+          ctx.user.id,
+          characterIdResult.value,
+        );
 
         if (result.isErr()) {
           throw new TRPCError({

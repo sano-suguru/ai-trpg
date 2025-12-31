@@ -32,7 +32,7 @@ export interface CreateCharacterDeps {
 export function createCharacterUseCase(deps: CreateCharacterDeps) {
   return (
     userId: UserId,
-    input: CreateCharacterInput
+    input: CreateCharacterInput,
   ): ResultAsync<Character, AppError> => {
     // 新しいIDを生成
     const characterId = UnsafeIds.characterId(deps.generateId());
@@ -42,7 +42,7 @@ export function createCharacterUseCase(deps: CreateCharacterDeps) {
 
     if (characterResult.isErr()) {
       return ResultAsync.fromSafePromise(
-        Promise.resolve(err(characterResult.error as AppError))
+        Promise.resolve(err(characterResult.error as AppError)),
       ).andThen((r) => r);
     }
 

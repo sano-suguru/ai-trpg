@@ -39,7 +39,9 @@ import type {
 /**
  * DB行からドメインモデルへ変換
  */
-export function toDomain(row: CharacterRow): Result<Character, ValidationError> {
+export function toDomain(
+  row: CharacterRow,
+): Result<Character, ValidationError> {
   const nameResult = createCharacterName(row.name);
   if (nameResult.isErr()) return err(nameResult.error);
 
@@ -111,7 +113,7 @@ export function toNewRow(character: Character): NewCharacterRow {
  * ドメインモデルからDB更新用の部分行への変換
  */
 export function toUpdateRow(
-  character: Character
+  character: Character,
 ): Omit<NewCharacterRow, "id" | "ownerId" | "createdAt"> {
   return {
     name: character.name as string,
@@ -135,7 +137,7 @@ export function toUpdateRow(
 // ========================================
 
 function jsonToFragments(
-  json: CharacterFragmentsJson
+  json: CharacterFragmentsJson,
 ): Result<CharacterFragments, ValidationError> {
   return createCharacterFragments({
     origin: json.origin.text,
@@ -147,25 +149,42 @@ function jsonToFragments(
   });
 }
 
-function fragmentsToJson(fragments: CharacterFragments): CharacterFragmentsJson {
+function fragmentsToJson(
+  fragments: CharacterFragments,
+): CharacterFragmentsJson {
   return {
-    origin: { category: FragmentCategories.ORIGIN, text: fragments.origin.text as string },
-    loss: { category: FragmentCategories.LOSS, text: fragments.loss.text as string },
-    mark: { category: FragmentCategories.MARK, text: fragments.mark.text as string },
+    origin: {
+      category: FragmentCategories.ORIGIN,
+      text: fragments.origin.text as string,
+    },
+    loss: {
+      category: FragmentCategories.LOSS,
+      text: fragments.loss.text as string,
+    },
+    mark: {
+      category: FragmentCategories.MARK,
+      text: fragments.mark.text as string,
+    },
     sin: fragments.sin
       ? { category: FragmentCategories.SIN, text: fragments.sin.text as string }
       : null,
     quest: fragments.quest
-      ? { category: FragmentCategories.QUEST, text: fragments.quest.text as string }
+      ? {
+          category: FragmentCategories.QUEST,
+          text: fragments.quest.text as string,
+        }
       : null,
     trait: fragments.trait
-      ? { category: FragmentCategories.TRAIT, text: fragments.trait.text as string }
+      ? {
+          category: FragmentCategories.TRAIT,
+          text: fragments.trait.text as string,
+        }
       : null,
   };
 }
 
 function jsonToDirectives(
-  json: CharacterDirectivesJson
+  json: CharacterDirectivesJson,
 ): Result<CharacterDirectives, ValidationError> {
   return createCharacterDirectives({
     danger: json.danger,
@@ -175,7 +194,9 @@ function jsonToDirectives(
   });
 }
 
-function directivesToJson(directives: CharacterDirectives): CharacterDirectivesJson {
+function directivesToJson(
+  directives: CharacterDirectives,
+): CharacterDirectivesJson {
   return {
     danger: directives.danger.response as string,
     ally_in_peril: directives.allyInPeril.response as string,
@@ -191,7 +212,9 @@ function jsonToVoiceSamples(json: VoiceSampleJson[]): readonly VoiceSample[] {
   }));
 }
 
-function voiceSamplesToJson(samples: readonly VoiceSample[]): VoiceSampleJson[] {
+function voiceSamplesToJson(
+  samples: readonly VoiceSample[],
+): VoiceSampleJson[] {
   return samples.map((s) => ({
     situation: s.situation,
     sample: s.sample,
@@ -220,7 +243,9 @@ function historyToJson(history: readonly HistoryEntry[]): HistoryEntryJson[] {
   }));
 }
 
-function jsonToRelationships(json: RelationshipJson[]): readonly Relationship[] {
+function jsonToRelationships(
+  json: RelationshipJson[],
+): readonly Relationship[] {
   return json.map((r) => ({
     characterId: UnsafeIds.characterId(r.characterId),
     characterName: r.characterName,
@@ -229,7 +254,9 @@ function jsonToRelationships(json: RelationshipJson[]): readonly Relationship[] 
   }));
 }
 
-function relationshipsToJson(relationships: readonly Relationship[]): RelationshipJson[] {
+function relationshipsToJson(
+  relationships: readonly Relationship[],
+): RelationshipJson[] {
   return relationships.map((r) => ({
     characterId: r.characterId as string,
     characterName: r.characterName,

@@ -49,7 +49,7 @@ const FRAGMENT_MAX_LENGTH = 200;
  * 断片テキストを生成（バリデーション付き）
  */
 export function createFragmentText(
-  value: string
+  value: string,
 ): Result<FragmentText, ValidationError> {
   const trimmed = value.trim();
 
@@ -57,8 +57,8 @@ export function createFragmentText(
     return err(
       Errors.validation(
         `断片は${FRAGMENT_MIN_LENGTH}文字以上必要です`,
-        "fragment"
-      )
+        "fragment",
+      ),
     );
   }
 
@@ -66,8 +66,8 @@ export function createFragmentText(
     return err(
       Errors.validation(
         `断片は${FRAGMENT_MAX_LENGTH}文字以内にしてください`,
-        "fragment"
-      )
+        "fragment",
+      ),
     );
   }
 
@@ -148,7 +148,7 @@ export interface CharacterFragments {
 // ========================================
 
 export function createOriginFragment(
-  text: string
+  text: string,
 ): Result<OriginFragment, ValidationError> {
   return createFragmentText(text).map((fragmentText) => ({
     category: FragmentCategories.ORIGIN,
@@ -157,7 +157,7 @@ export function createOriginFragment(
 }
 
 export function createLossFragment(
-  text: string
+  text: string,
 ): Result<LossFragment, ValidationError> {
   return createFragmentText(text).map((fragmentText) => ({
     category: FragmentCategories.LOSS,
@@ -166,7 +166,7 @@ export function createLossFragment(
 }
 
 export function createMarkFragment(
-  text: string
+  text: string,
 ): Result<MarkFragment, ValidationError> {
   return createFragmentText(text).map((fragmentText) => ({
     category: FragmentCategories.MARK,
@@ -175,7 +175,7 @@ export function createMarkFragment(
 }
 
 export function createSinFragment(
-  text: string
+  text: string,
 ): Result<SinFragment, ValidationError> {
   return createFragmentText(text).map((fragmentText) => ({
     category: FragmentCategories.SIN,
@@ -184,7 +184,7 @@ export function createSinFragment(
 }
 
 export function createQuestFragment(
-  text: string
+  text: string,
 ): Result<QuestFragment, ValidationError> {
   return createFragmentText(text).map((fragmentText) => ({
     category: FragmentCategories.QUEST,
@@ -193,7 +193,7 @@ export function createQuestFragment(
 }
 
 export function createTraitFragment(
-  text: string
+  text: string,
 ): Result<TraitFragment, ValidationError> {
   return createFragmentText(text).map((fragmentText) => ({
     category: FragmentCategories.TRAIT,
@@ -224,13 +224,13 @@ export interface CreateFragmentsInput {
  * 任意断片のバリデーションに失敗した場合はnullとして扱う
  */
 export function createCharacterFragments(
-  input: CreateFragmentsInput
+  input: CreateFragmentsInput,
 ): Result<CharacterFragments, ValidationError> {
   // 必須断片のバリデーション
   const originResult = createOriginFragment(input.origin);
   if (originResult.isErr()) {
     return err(
-      Errors.validation(originResult.error.message, "fragments.origin")
+      Errors.validation(originResult.error.message, "fragments.origin"),
     );
   }
 
@@ -249,7 +249,7 @@ export function createCharacterFragments(
     input.sin && input.sin.trim().length > 0
       ? createSinFragment(input.sin).match(
           (f) => f,
-          () => null
+          () => null,
         )
       : null;
 
@@ -257,7 +257,7 @@ export function createCharacterFragments(
     input.quest && input.quest.trim().length > 0
       ? createQuestFragment(input.quest).match(
           (f) => f,
-          () => null
+          () => null,
         )
       : null;
 
@@ -265,7 +265,7 @@ export function createCharacterFragments(
     input.trait && input.trait.trim().length > 0
       ? createTraitFragment(input.trait).match(
           (f) => f,
-          () => null
+          () => null,
         )
       : null;
 

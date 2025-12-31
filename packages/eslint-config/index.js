@@ -6,7 +6,7 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier",
+    "plugin:prettier/recommended", // Prettier統合（最後に配置）
   ],
   plugins: ["@typescript-eslint"],
   parserOptions: {

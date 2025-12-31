@@ -15,7 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use official templates and examples when available
 
 ### Code Quality First
-- Run `pnpm lint` and `pnpm typecheck` after making changes
+- Run `pnpm lint -- --fix` and `pnpm typecheck` after making changes
+- `pnpm lint -- --fix` runs both ESLint and Prettier (auto-format)
 - Fix ALL errors AND warnings before considering a task complete
 - Treat warnings as errors - do not ignore or defer them
 

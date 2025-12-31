@@ -40,20 +40,22 @@ export function createCharacterRepository(db: Database): CharacterRepository {
         db.query.characters.findFirst({
           where: eq(characters.id, id as string),
         }),
-        (e: unknown) => Errors.database("read", String(e))
+        (e: unknown) => Errors.database("read", String(e)),
       ).andThen((row) => {
         if (!row) return ok(null);
         return toDomain(row).mapErr((e) => Errors.database("read", e.message));
       });
     },
 
-    findByOwnerId(ownerId: UserId): ResultAsync<readonly Character[], AppError> {
+    findByOwnerId(
+      ownerId: UserId,
+    ): ResultAsync<readonly Character[], AppError> {
       return ResultAsync.fromPromise(
         db.query.characters.findMany({
           where: eq(characters.ownerId, ownerId as string),
           orderBy: (characters, { desc }) => [desc(characters.updatedAt)],
         }),
-        (e: unknown) => Errors.database("read", String(e))
+        (e: unknown) => Errors.database("read", String(e)),
       ).andThen((rows) => {
         const results: Character[] = [];
         for (const row of rows) {
@@ -76,7 +78,7 @@ export function createCharacterRepository(db: Database): CharacterRepository {
           ),
           orderBy: (characters, { desc }) => [desc(characters.updatedAt)],
         }),
-        (e: unknown) => Errors.database("read", String(e))
+        (e: unknown) => Errors.database("read", String(e)),
       ).andThen((rows) => {
         const results: Character[] = [];
         for (const row of rows) {
@@ -95,12 +97,14 @@ export function createCharacterRepository(db: Database): CharacterRepository {
       const row = toNewRow(character);
       return ResultAsync.fromPromise(
         db.insert(characters).values(row).returning(),
-        (e: unknown) => Errors.database("write", String(e))
+        (e: unknown) => Errors.database("write", String(e)),
       ).andThen((rows) => {
         if (rows.length === 0) {
           return err(Errors.database("write", "Failed to insert character"));
         }
-        return toDomain(rows[0]).mapErr((e) => Errors.database("read", e.message));
+        return toDomain(rows[0]).mapErr((e) =>
+          Errors.database("read", e.message),
+        );
       });
     },
 
@@ -112,19 +116,21 @@ export function createCharacterRepository(db: Database): CharacterRepository {
           .set(updateData)
           .where(eq(characters.id, character.id as string))
           .returning(),
-        (e: unknown) => Errors.database("write", String(e))
+        (e: unknown) => Errors.database("write", String(e)),
       ).andThen((rows) => {
         if (rows.length === 0) {
           return err(Errors.notFound("Character", character.id as string));
         }
-        return toDomain(rows[0]).mapErr((e) => Errors.database("read", e.message));
+        return toDomain(rows[0]).mapErr((e) =>
+          Errors.database("read", e.message),
+        );
       });
     },
 
     delete(id: CharacterId): ResultAsync<void, AppError> {
       return ResultAsync.fromPromise(
         db.delete(characters).where(eq(characters.id, id as string)),
-        (e: unknown) => Errors.database("delete", String(e))
+        (e: unknown) => Errors.database("delete", String(e)),
       ).map(() => undefined);
     },
   };

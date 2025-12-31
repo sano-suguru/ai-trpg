@@ -44,7 +44,7 @@ const DIRECTIVE_MAX_LENGTH = 200;
  * 行動指針レスポンスを生成（バリデーション付き）
  */
 export function createDirectiveResponse(
-  value: string
+  value: string,
 ): Result<DirectiveResponse, ValidationError> {
   const trimmed = value.trim();
 
@@ -56,8 +56,8 @@ export function createDirectiveResponse(
     return err(
       Errors.validation(
         `行動指針は${DIRECTIVE_MAX_LENGTH}文字以内にしてください`,
-        "directive"
-      )
+        "directive",
+      ),
     );
   }
 
@@ -120,7 +120,7 @@ export interface CharacterDirectives {
 // ========================================
 
 export function createDangerDirective(
-  response: string
+  response: string,
 ): Result<DangerDirective, ValidationError> {
   return createDirectiveResponse(response).map((r) => ({
     situation: DirectiveSituations.DANGER,
@@ -129,7 +129,7 @@ export function createDangerDirective(
 }
 
 export function createAllyInPerilDirective(
-  response: string
+  response: string,
 ): Result<AllyInPerilDirective, ValidationError> {
   return createDirectiveResponse(response).map((r) => ({
     situation: DirectiveSituations.ALLY_IN_PERIL,
@@ -138,7 +138,7 @@ export function createAllyInPerilDirective(
 }
 
 export function createMoralChoiceDirective(
-  response: string
+  response: string,
 ): Result<MoralChoiceDirective, ValidationError> {
   return createDirectiveResponse(response).map((r) => ({
     situation: DirectiveSituations.MORAL_CHOICE,
@@ -147,7 +147,7 @@ export function createMoralChoiceDirective(
 }
 
 export function createUnknownDirective(
-  response: string
+  response: string,
 ): Result<UnknownDirective, ValidationError> {
   return createDirectiveResponse(response).map((r) => ({
     situation: DirectiveSituations.UNKNOWN,
@@ -173,33 +173,33 @@ export interface CreateDirectivesInput {
  * CharacterDirectivesを生成（バリデーション付き）
  */
 export function createCharacterDirectives(
-  input: CreateDirectivesInput
+  input: CreateDirectivesInput,
 ): Result<CharacterDirectives, ValidationError> {
   const dangerResult = createDangerDirective(input.danger);
   if (dangerResult.isErr()) {
     return err(
-      Errors.validation(dangerResult.error.message, "directives.danger")
+      Errors.validation(dangerResult.error.message, "directives.danger"),
     );
   }
 
   const allyResult = createAllyInPerilDirective(input.allyInPeril);
   if (allyResult.isErr()) {
     return err(
-      Errors.validation(allyResult.error.message, "directives.allyInPeril")
+      Errors.validation(allyResult.error.message, "directives.allyInPeril"),
     );
   }
 
   const moralResult = createMoralChoiceDirective(input.moralChoice);
   if (moralResult.isErr()) {
     return err(
-      Errors.validation(moralResult.error.message, "directives.moralChoice")
+      Errors.validation(moralResult.error.message, "directives.moralChoice"),
     );
   }
 
   const unknownResult = createUnknownDirective(input.unknown);
   if (unknownResult.isErr()) {
     return err(
-      Errors.validation(unknownResult.error.message, "directives.unknown")
+      Errors.validation(unknownResult.error.message, "directives.unknown"),
     );
   }
 
@@ -236,7 +236,7 @@ export function directivesToPlain(directives: CharacterDirectives): {
  * 状況を日本語で取得
  */
 export function getDirectiveSituationLabel(
-  situation: DirectiveSituation
+  situation: DirectiveSituation,
 ): string {
   const labels: Record<DirectiveSituation, string> = {
     danger: "危険を前にしたとき",

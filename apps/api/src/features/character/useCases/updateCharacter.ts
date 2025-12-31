@@ -32,7 +32,7 @@ export function updateCharacterUseCase(deps: UpdateCharacterDeps) {
   return (
     userId: UserId,
     characterId: CharacterId,
-    input: UpdateCharacterInput
+    input: UpdateCharacterInput,
   ): ResultAsync<Character, AppError> => {
     return deps.repository.findById(characterId).andThen((character) => {
       if (!character) {
@@ -41,7 +41,9 @@ export function updateCharacterUseCase(deps: UpdateCharacterDeps) {
 
       // 所有者チェック
       if (character.ownerId !== userId) {
-        return err(Errors.forbidden("このキャラクターへのアクセス権がありません"));
+        return err(
+          Errors.forbidden("このキャラクターへのアクセス権がありません"),
+        );
       }
 
       // ドメインモデルを更新
