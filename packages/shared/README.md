@@ -8,7 +8,8 @@
 src/
 ├── domain/           # ドメインモデル（FDM）
 │   ├── primitives/   # Branded ID型
-│   └── character/    # キャラクタードメイン
+│   ├── character/    # キャラクタードメイン
+│   └── dungeon/      # ダンジョンドメイン
 ├── schemas/          # Zodスキーマ（API入力バリデーション）
 ├── types/            # エラー型、共通型
 ├── lib/              # ユーティリティ（Result型、Brand型）
@@ -82,6 +83,11 @@ function findUser(id: UserId): Result<User, AppError> {
 | `Character` | キャラクターエンティティ |
 | `Fragments` | 断片（出自、喪失、刻印など） |
 | `Directives` | 行動指針 |
+| `Dungeon` | ダンジョンエンティティ |
+| `DungeonLore` | ダンジョンのロア（過去・堕落・現在） |
+| `DungeonLayer` | ダンジョンの層 |
+| `DungeonCore` | ダンジョンの核心 |
+| `ResonanceTrigger` | 共鳴トリガー |
 
 ### Schemas
 
@@ -89,6 +95,8 @@ function findUser(id: UserId): Result<User, AppError> {
 |----------|------|
 | `createCharacterSchema` | キャラクター作成入力 |
 | `updateCharacterSchema` | キャラクター更新入力 |
+| `createDungeonSchema` | ダンジョン作成入力 |
+| `updateDungeonSchema` | ダンジョン更新入力 |
 
 ### Errors
 

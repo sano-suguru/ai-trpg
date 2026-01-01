@@ -7,6 +7,8 @@
 import { router } from "./index";
 import { createCharacterRouter } from "../features/character";
 import type { CharacterRepository } from "../features/character";
+import { createDungeonRouter } from "../features/dungeon";
+import type { DungeonRepository } from "../features/dungeon";
 
 // ========================================
 // Router Dependencies
@@ -14,6 +16,7 @@ import type { CharacterRepository } from "../features/character";
 
 export interface AppRouterDeps {
   readonly characterRepository: CharacterRepository;
+  readonly dungeonRepository: DungeonRepository;
   readonly generateId: () => string;
 }
 
@@ -32,10 +35,15 @@ export function createAppRouter(deps: AppRouterDeps) {
     generateId: deps.generateId,
   });
 
+  const dungeonRouter = createDungeonRouter({
+    repository: deps.dungeonRepository,
+    generateId: deps.generateId,
+  });
+
   return router({
     character: characterRouter,
+    dungeon: dungeonRouter,
     // TODO: 他のfeatureルーターを追加
-    // dungeon: dungeonRouter,
     // session: sessionRouter,
   });
 }

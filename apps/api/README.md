@@ -7,7 +7,8 @@ Hono + Cloudflare Workers で構築されたバックエンドAPI。
 ```
 src/
 ├── features/              # Vertical Slice（機能単位）
-│   └── character/         # キャラクター機能
+│   ├── character/         # キャラクター機能
+│   └── dungeon/           # ダンジョン機能
 │       ├── router.ts      # tRPCルーター定義
 │       ├── repository.ts  # データアクセス層
 │       ├── mapper.ts      # DB ⇔ ドメインモデル変換
@@ -86,6 +87,16 @@ pnpm cf-typegen
 export const characterRouter = router({
   list: publicProcedure.query(...),      // 公開キャラ一覧
   get: publicProcedure.input(...).query(...),  // キャラ取得
+  create: protectedProcedure.input(...).mutation(...),  // 作成
+  update: protectedProcedure.input(...).mutation(...),  // 更新
+  delete: protectedProcedure.input(...).mutation(...),  // 削除
+});
+
+// features/dungeon/router.ts
+export const dungeonRouter = router({
+  list: publicProcedure.query(...),      // 公開ダンジョン一覧
+  listMine: protectedProcedure.query(...),  // 自分のダンジョン
+  get: publicProcedure.input(...).query(...),  // ダンジョン取得
   create: protectedProcedure.input(...).mutation(...),  // 作成
   update: protectedProcedure.input(...).mutation(...),  // 更新
   delete: protectedProcedure.input(...).mutation(...),  // 削除

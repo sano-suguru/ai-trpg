@@ -12,8 +12,8 @@
   },
   "devDependencies": {
     "@ai-trpg/eslint-config": "workspace:*",
-    "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
+    "eslint": "^8.57.1",
+    "prettier": "^3.7.4",
     "turbo": "^2.7.2"
   }
 }
