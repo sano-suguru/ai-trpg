@@ -163,5 +163,6 @@ export const trpc = createTRPCReact<AppRouter>();
 ---
 
 **作成日:** 2026-01-01
+**完了日:** 2026-01-01
 **担当:** Claude
-**ステータス:** Ready
+**ステータス:** Completed
