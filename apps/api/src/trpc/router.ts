@@ -5,6 +5,7 @@
  */
 
 import { router } from "./index";
+import { createAuthRouter } from "../features/auth";
 import { createCharacterRouter } from "../features/character";
 import type { CharacterRepository } from "../features/character";
 import { createDungeonRouter } from "../features/dungeon";
@@ -30,6 +31,8 @@ export interface AppRouterDeps {
  * 依存性を注入してルーターを構築
  */
 export function createAppRouter(deps: AppRouterDeps) {
+  const authRouter = createAuthRouter();
+
   const characterRouter = createCharacterRouter({
     repository: deps.characterRepository,
     generateId: deps.generateId,
@@ -41,6 +44,7 @@ export function createAppRouter(deps: AppRouterDeps) {
   });
 
   return router({
+    auth: authRouter,
     character: characterRouter,
     dungeon: dungeonRouter,
     // TODO: 他のfeatureルーターを追加

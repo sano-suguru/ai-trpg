@@ -48,11 +48,10 @@ TEMPLATEに従って以下を記述:
 
 ## 完了したタスク
 
-完了したタスクは `done/` サブディレクトリに移動するか、削除してください。
+完了したタスクは `completed/` サブディレクトリに移動してください。
 
 ```bash
-mkdir -p .claude/tasks/done
-mv .claude/tasks/feature-xxx.md .claude/tasks/done/
+mv .claude/tasks/feature-xxx.md .claude/tasks/completed/
 ```
 
 ## 注意事項

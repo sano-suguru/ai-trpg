@@ -106,7 +106,7 @@ export const dungeonRouter = router({
 ### 認証
 
 - `publicProcedure`: 認証不要
-- `protectedProcedure`: 認証必須
+- `protectedProcedure`: 認証必須（Supabase Auth JWT検証）
 
 ### エラーハンドリング
 
@@ -132,16 +132,12 @@ export const getCharacter = (
 
 ## 環境変数
 
-```bash
-# Supabase
-DATABASE_URL=postgresql://...
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_ANON_KEY=xxx
-SUPABASE_SERVICE_KEY=xxx
+`.dev.vars` を作成（`.dev.vars.example` を参照）。
 
-# LLM（Phase 2以降）
-GEMINI_API_KEY=xxx
-GROQ_API_KEY=xxx
+```bash
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_SERVICE_KEY=<from npx supabase status>
 ```
 
 ## Feature追加手順

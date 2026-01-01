@@ -8,6 +8,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import superjson from "superjson";
 import type { AppRouter } from "@ai-trpg/api/trpc";
+import { supabase } from "./supabase";
 
 // ========================================
 // API URL
@@ -17,6 +18,20 @@ function getApiUrl(): string {
   // 環境変数から取得、なければデフォルト
   // wrangler devのデフォルトポートは8787だが、使用中の場合8788になる
   return import.meta.env.VITE_API_URL ?? "http://localhost:8787";
+}
+
+// ========================================
+// Auth Token
+// ========================================
+
+/**
+ * 現在のセッションからアクセストークンを取得
+ */
+async function getAuthToken(): Promise<string | null> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
 }
 
 // ========================================
@@ -35,12 +50,15 @@ export function createTrpcClient() {
       httpBatchLink({
         url: `${getApiUrl()}/trpc`,
         transformer: superjson,
-        // 将来の認証対応用
-        // async headers() {
-        //   return {
-        //     authorization: getAuthToken(),
-        //   };
-        // },
+        async headers() {
+          const token = await getAuthToken();
+          if (!token) {
+            return {};
+          }
+          return {
+            Authorization: `Bearer ${token}`,
+          };
+        },
       }),
     ],
   });

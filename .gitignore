@@ -12,5 +12,5 @@ public/dist
 
 # Playwright
 e2e-results/
-playwright-report/
 playwright/.cache/
+.playwright-mcp/
