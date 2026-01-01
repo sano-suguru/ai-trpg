@@ -19,8 +19,10 @@ src/
 │   └── dungeons.tsx      # ダンジョン一覧 (/dungeons)
 ├── stores/               # Zustand ストア
 ├── hooks/                # カスタムフック
+│   └── useAuth.ts        # 認証フック
 ├── lib/                  # ユーティリティ
-│   └── trpc.ts           # tRPCクライアント設定
+│   ├── trpc.ts           # tRPCクライアント設定
+│   └── supabase.ts       # Supabaseクライアント
 ├── routeTree.gen.ts      # 自動生成されるルートツリー
 └── style.css             # グローバルスタイル、Tailwind設定
 ```
@@ -101,6 +103,7 @@ TanStack Routerを使用したファイルベースルーティング。
 src/routes/
 ├── __root.tsx        # ルートレイアウト（Header, Outlet）
 ├── index.tsx         # / (ホームページ)
+├── login.tsx         # /login (ログインページ)
 ├── characters.tsx    # /characters
 └── dungeons.tsx      # /dungeons
 ```
@@ -172,6 +175,8 @@ shadcn/uiはコード所有方式。`components/ui/` 内のファイルを直接
 ```bash
 # .env
 VITE_API_URL=http://localhost:8787
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_ANON_KEY=<from npx supabase status>
 ```
 
 ## 開発時の注意

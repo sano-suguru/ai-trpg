@@ -6,7 +6,8 @@
  */
 
 import type { Context as HonoContext } from "hono";
-import type { UserId } from "@ai-trpg/shared/domain";
+import { UnsafeIds, type UserId } from "@ai-trpg/shared/domain";
+import type { AuthUser as SupabaseAuthUser } from "../infrastructure/supabase/client";
 
 // ========================================
 // Context Types
@@ -43,19 +44,33 @@ export interface AuthenticatedTRPCContext extends TRPCContext {
 // ========================================
 
 /**
+ * Honoコンテキストの型（認証ミドルウェア適用後）
+ */
+interface AuthenticatedHonoContext extends HonoContext {
+  get(key: "user"): SupabaseAuthUser | null;
+}
+
+/**
  * コンテキスト生成関数
  *
  * @hono/trpc-serverのcreateContextは (_opts, honoContext) の形式
  * @param _opts - tRPC FetchCreateContextFnOptions（未使用）
- * @param c - Honoコンテキスト
+ * @param c - Honoコンテキスト（認証ミドルウェア適用後）
  * @returns tRPCコンテキスト
  */
 export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
-  // TODO: 認証情報をHonoコンテキストから取得
-  // 現時点ではnullを返す（未認証）
+  // 認証ミドルウェアがセットしたユーザー情報を取得
+  const honoCtx = c as AuthenticatedHonoContext;
+  const supabaseUser = honoCtx.get("user");
+
+  // SupabaseのユーザーIDをドメインのUserId型に変換
+  const user: AuthUser | null = supabaseUser
+    ? { id: UnsafeIds.userId(supabaseUser.id) }
+    : null;
+
   return {
     honoContext: c,
-    user: null,
+    user,
   };
 }
 
