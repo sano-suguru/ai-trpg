@@ -11,19 +11,27 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-trpg/api": "workspace:*",
     "@ai-trpg/shared": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.90.16",
+    "@tanstack/react-router": "^1.144.0",
+    "@trpc/client": "^11.8.1",
+    "@trpc/tanstack-react-query": "^11.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "superjson": "^2.2.6",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@ai-trpg/eslint-config": "workspace:*",
     "@ai-trpg/typescript-config": "workspace:*",
+    "@tanstack/react-router-devtools": "^1.144.0",
+    "@tanstack/router-plugin": "^1.145.2",
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",

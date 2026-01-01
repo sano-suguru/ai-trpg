@@ -11,11 +11,17 @@ src/
 │   ├── character/        # キャラクター関連
 │   ├── dungeon/          # ダンジョン関連
 │   ├── session/          # セッション関連
-│   └── layout/           # レイアウト（Header, Footer等）
-├── pages/                # ページコンポーネント（将来のルーティング用）
+│   └── layout/           # レイアウト（Header等）
+├── routes/               # TanStack Router ルート定義
+│   ├── __root.tsx        # ルートレイアウト
+│   ├── index.tsx         # ホームページ (/)
+│   ├── characters.tsx    # キャラクター一覧 (/characters)
+│   └── dungeons.tsx      # ダンジョン一覧 (/dungeons)
 ├── stores/               # Zustand ストア
 ├── hooks/                # カスタムフック
 ├── lib/                  # ユーティリティ
+│   └── trpc.ts           # tRPCクライアント設定
+├── routeTree.gen.ts      # 自動生成されるルートツリー
 └── style.css             # グローバルスタイル、Tailwind設定
 ```
 
@@ -23,13 +29,15 @@ src/
 
 | 技術 | 用途 |
 |------|------|
-| React 18 | UIライブラリ |
+| React 19 | UIライブラリ |
 | TypeScript | 型安全性 |
 | Vite | ビルドツール |
-| Tailwind CSS | スタイリング |
+| Tailwind CSS v4 | スタイリング |
+| TanStack Router | 型安全ルーティング |
+| TanStack Query | データフェッチング |
+| tRPC Client | API通信（型安全） |
 | shadcn/ui | UIコンポーネント |
-| Zustand | 状態管理 |
-| tRPC Client | API通信 |
+| Zustand | 状態管理（将来用）|
 
 ## コマンド
 
@@ -85,34 +93,65 @@ components/
 │   └── FragmentSelector.tsx  # 断片選択
 ```
 
+## ルーティング
+
+TanStack Routerを使用したファイルベースルーティング。
+
+```
+src/routes/
+├── __root.tsx        # ルートレイアウト（Header, Outlet）
+├── index.tsx         # / (ホームページ)
+├── characters.tsx    # /characters
+└── dungeons.tsx      # /dungeons
+```
+
+### ルート定義
+
+```typescript
+// routes/characters.tsx
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/characters")({
+  component: CharactersPage,
+});
+```
+
+### リンク
+
+```tsx
+import { Link } from "@tanstack/react-router";
+
+<Link to="/characters">キャラクター</Link>
+```
+
 ## 状態管理
 
-### Zustandストア
+### サーバー状態: TanStack Query + tRPC
+
+```typescript
+import { useTRPC } from "@/lib/trpc";
+import { useQuery } from "@tanstack/react-query";
+
+function CharactersPage() {
+  const trpc = useTRPC();
+  const { data, isLoading } = useQuery(
+    trpc.character.listBorrowable.queryOptions()
+  );
+  // ...
+}
+```
+
+### クライアント状態: Zustand（将来用）
 
 ```typescript
 // stores/characterStore.ts
 interface CharacterStore {
-  characters: Character[];
   selectedId: CharacterId | null;
   actions: {
     select: (id: CharacterId) => void;
     clear: () => void;
   };
 }
-```
-
-### tRPC統合
-
-```typescript
-// APIデータの取得
-const { data, isLoading } = trpc.character.list.useQuery();
-
-// ミューテーション
-const createMutation = trpc.character.create.useMutation({
-  onSuccess: () => {
-    // キャッシュ更新
-  },
-});
 ```
 
 ## shadcn/ui

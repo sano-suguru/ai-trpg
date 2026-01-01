@@ -54,7 +54,8 @@ packages/
 
 **Dependency Rules**:
 - `apps/web` and `apps/api` depend on `packages/shared`
-- `apps/web` and `apps/api` must NOT depend on each other
+- `apps/web` and `apps/api` must NOT have runtime dependencies on each other
+- Exception: `apps/web` may use `import type` to reference `AppRouter` from `apps/api` (tRPC type safety)
 - `packages/shared` has no internal dependencies
 
 ## Common Commands

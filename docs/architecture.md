@@ -30,6 +30,7 @@
 | **スタイリング** | Tailwind CSS | CSS Modules, styled-components | CSS Modulesは命名規約の一貫性維持が困難。styled-componentsはランタイムコストがある。Tailwindはユーティリティクラスで高速開発可能 |
 | **UIコンポーネント** | shadcn/ui | MUI, Chakra UI, Mantine | MUI/ChakraはバンドルサイズとTailwind統合に難。Mantineは良いがshadcn/uiの方がカスタマイズ自由度が高い（コード所有方式） |
 | **エラーハンドリング** | neverthrow | try-catch, Effect | 詳細は「エラーハンドリング設計」セクション参照 |
+| **ルーティング** | TanStack Router | React Router, Wouter | React Routerは型安全性が弱い。WouterはシンプルだがtRPC/React Query統合パターンが少ない。TanStack Routerは100%型推論対応、ファイルベースルーティング、React 19対応 |
 
 ### 無料枠まとめ
 
@@ -163,10 +164,14 @@ packages/
 ```
 shared ← web
 shared ← api
+api (型のみ) ← web
 ```
 
 - `web` と `api` は `shared` に依存してよい
-- `web` と `api` は互いに依存してはならない
+- `web` と `api` は互いにランタイム依存してはならない
+- ただし、`web` から `api` への **型のみの参照**（`import type`）は許可する
+  - tRPCの型安全性のため、`AppRouter`型を直接参照する（公式推奨パターン）
+  - `import type`はコンパイル時に除去され、バンドルには含まれない
 - `shared` は外部パッケージ以外に依存してはならない
 
 ### 配置ルール
