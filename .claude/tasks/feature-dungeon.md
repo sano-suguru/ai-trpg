@@ -14,17 +14,17 @@
 
 ### 機能要件
 
-- [ ] ダンジョン一覧取得（公開ダンジョンのみ / 自分のダンジョン）
-- [ ] ダンジョン詳細取得
-- [ ] ダンジョン作成
-- [ ] ダンジョン更新
-- [ ] ダンジョン削除
+- [x] ダンジョン一覧取得（公開ダンジョンのみ / 自分のダンジョン）
+- [x] ダンジョン詳細取得
+- [x] ダンジョン作成
+- [x] ダンジョン更新
+- [x] ダンジョン削除
 
 ### 非機能要件
 
-- [ ] 既存のCharacterパターンに準拠（一貫性）
-- [ ] Result型によるエラーハンドリング
-- [ ] Branded Typesの使用（DungeonId）
+- [x] 既存のCharacterパターンに準拠（一貫性）
+- [x] Result型によるエラーハンドリング
+- [x] Branded Typesの使用（DungeonId）
 
 ## 設計
 
@@ -165,38 +165,38 @@ export const dungeons = pgTable("dungeons", {
 
 ## 実装手順
 
-1. [ ] `shared/domain/primitives/ids.ts` に `DungeonId` 追加
-2. [ ] `shared/domain/dungeon/` にドメインモデル作成
+1. [x] `shared/domain/primitives/ids.ts` に `DungeonId` 追加
+2. [x] `shared/domain/dungeon/` にドメインモデル作成
    - `types.ts` - 型定義
    - `operations.ts` - ファクトリ関数、バリデーション
    - `index.ts` - エクスポート
-3. [ ] `shared/schemas/dungeon.ts` にZodスキーマ追加
-4. [ ] `shared/schemas/index.ts` にエクスポート追加
-5. [ ] `shared/domain/index.ts` にエクスポート追加
-6. [ ] `api/infrastructure/database/schema/dungeons.ts` 作成
-7. [ ] `api/infrastructure/database/schema/index.ts` にエクスポート追加
-8. [ ] `api/features/dungeon/` にFeature Slice作成
+3. [x] `shared/schemas/dungeon.ts` にZodスキーマ追加
+4. [x] `shared/schemas/index.ts` にエクスポート追加
+5. [x] `shared/domain/index.ts` にエクスポート追加
+6. [x] `api/infrastructure/database/schema/dungeons.ts` 作成
+7. [x] `api/infrastructure/database/schema/index.ts` にエクスポート追加
+8. [x] `api/features/dungeon/` にFeature Slice作成
    - `repository.ts` - DBアクセス
    - `mapper.ts` - DB ↔ ドメイン変換
    - `useCases/` - ビジネスロジック
    - `router.ts` - tRPCルーター
    - `index.ts` - エクスポート
-9. [ ] `api/trpc/router.ts` に dungeonルーター追加
-10. [ ] `pnpm lint -- --fix` 実行
-11. [ ] `pnpm typecheck` 実行
+9. [x] `api/trpc/router.ts` に dungeonルーター追加
+10. [x] `pnpm lint -- --fix` 実行
+11. [x] `pnpm typecheck` 実行
 
 ## テスト計画
 
 - [ ] 手動テスト: tRPC経由でCRUD操作確認
-- [ ] 型チェック: `pnpm typecheck` パス
+- [x] 型チェック: `pnpm typecheck` パス
 
 ## 完了条件
 
-- [ ] 全ての要件が実装されている
-- [ ] `pnpm lint` がパス（警告なし）
-- [ ] `pnpm typecheck` がパス
-- [ ] Characterパターンとの一貫性が保たれている
-- [ ] ドメインモデルが設計書（docs/design.md）と整合している
+- [x] 全ての要件が実装されている
+- [x] `pnpm lint` がパス（警告なし）
+- [x] `pnpm typecheck` がパス
+- [x] Characterパターンとの一貫性が保たれている
+- [x] ドメインモデルが設計書（docs/design.md）と整合している
 
 ## 参考
 
@@ -209,4 +209,6 @@ export const dungeons = pgTable("dungeons", {
 
 **作成日:** 2026-01-01
 **担当:** Claude
-**ステータス:** Ready
+**ステータス:** Complete
+**完了日:** 2026-01-01
+**PR:** https://github.com/sano-suguru/ai-trpg/pull/2
