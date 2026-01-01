@@ -20,6 +20,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Fix ALL errors AND warnings before considering a task complete
 - Treat warnings as errors - do not ignore or defer them
 
+### Verification Required (No Vibe Coding)
+- "I implemented it" is NOT completion - verify that it actually works
+- Open browser with Playwright MCP, interact with the feature, and take screenshots
+- Create and run E2E tests, review the recorded video
+- Prohibited: mock implementations, slideshow-style tests (goto-only navigation), hardcoded values
+
 ### Git Commit Rules
 - Do NOT add Claude signature or Co-Authored-By footer to commit messages
 - Use conventional commits format: `type(scope): message`
@@ -81,6 +87,11 @@ pnpm lint
 
 # Type check
 pnpm typecheck
+
+# E2E tests
+pnpm --filter @ai-trpg/web e2e          # headless
+pnpm --filter @ai-trpg/web e2e:headed   # with browser
+pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 ```
 
 ## Architecture Decisions
