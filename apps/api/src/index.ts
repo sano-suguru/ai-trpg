@@ -6,6 +6,7 @@
  */
 
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import { createAppRouter } from "./trpc/router";
 import { createContext } from "./trpc/context";
@@ -26,6 +27,16 @@ interface Env {
 // ========================================
 
 const app = new Hono<{ Bindings: Env }>();
+
+// CORS設定（開発環境用）
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type"],
+  }),
+);
 
 // ヘルスチェック
 app.get("/health", (c) => {
