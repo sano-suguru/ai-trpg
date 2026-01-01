@@ -9,3 +9,8 @@ dist-ssr
 .cache
 server/dist
 public/dist
+
+# Playwright
+e2e-results/
+playwright-report/
+playwright/.cache/
