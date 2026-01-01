@@ -11,6 +11,7 @@ import { createAppRouter } from "./trpc/router";
 import { createContext } from "./trpc/context";
 import { createDatabase } from "./infrastructure/database/client";
 import { createCharacterRepository } from "./features/character/repository";
+import { createDungeonRepository } from "./features/dungeon/repository";
 
 // ========================================
 // Environment Types
@@ -38,10 +39,12 @@ app.use("/trpc/*", async (c, next) => {
 
   // Repositoryを作成
   const characterRepository = createCharacterRepository(db);
+  const dungeonRepository = createDungeonRepository(db);
 
   // ルーターを作成（依存性注入）
   const appRouter = createAppRouter({
     characterRepository,
+    dungeonRepository,
     generateId: () => crypto.randomUUID(),
   });
 
