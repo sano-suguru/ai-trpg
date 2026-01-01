@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "neverthrow": "^8.2.0",
-    "zod": "^4.3.2"
+    "zod": "^4.3.4"
   }
 }
