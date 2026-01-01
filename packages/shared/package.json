@@ -20,7 +20,7 @@
   "devDependencies": {
     "@ai-trpg/eslint-config": "workspace:*",
     "@ai-trpg/typescript-config": "workspace:*",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "typescript": "5.9.3"
   },
   "dependencies": {
