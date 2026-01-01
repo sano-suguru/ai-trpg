@@ -9,6 +9,8 @@ AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG 
 
 ### Frontend (apps/web)
 - React 19 + TypeScript + Vite
+- TanStack Router (file-based routing)
+- TanStack Query + tRPC client
 - Tailwind CSS 4
 - Zustand (state management)
 - shadcn/ui components

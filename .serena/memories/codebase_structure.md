@@ -38,12 +38,20 @@ apps/api/
 ```
 apps/web/
 ├── src/
-│   ├── main.tsx           # Entry point
-│   ├── App.tsx            # Root component
-│   ├── style.css          # Global styles
-│   ├── lib/               # Utilities
-│   └── components/        # UI components by domain
-└── vite.config.ts         # Vite configuration
+│   ├── main.tsx           # Entry point (TanStack Router setup)
+│   ├── style.css          # Global styles (Tailwind)
+│   ├── routeTree.gen.ts   # Auto-generated route tree
+│   ├── routes/            # File-based routing (TanStack Router)
+│   │   ├── __root.tsx     # Root layout
+│   │   ├── index.tsx      # Home page (/)
+│   │   ├── characters.tsx # Characters page (/characters)
+│   │   └── dungeons.tsx   # Dungeons page (/dungeons)
+│   ├── components/        # UI components
+│   │   └── layout/        # Layout components (Header, etc.)
+│   └── lib/               # Utilities
+│       ├── trpc.ts        # tRPC client setup
+│       └── utils.ts       # General utilities
+└── vite.config.ts         # Vite configuration (TanStack Router plugin)
 ```
 
 ## Packages
