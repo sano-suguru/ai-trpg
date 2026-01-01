@@ -48,8 +48,8 @@ importers:
         specifier: ^2.2.6
         version: 2.2.6
       zod:
-        specifier: ^4.3.2
-        version: 4.3.2
+        specifier: ^4.3.4
+        version: 4.3.4
     devDependencies:
       '@ai-trpg/eslint-config':
         specifier: workspace:*
@@ -155,8 +155,8 @@ importers:
         specifier: ^8.2.0
         version: 8.2.0
       zod:
-        specifier: ^4.3.2
-        version: 4.3.2
+        specifier: ^4.3.4
+        version: 4.3.4
     devDependencies:
       '@ai-trpg/eslint-config':
         specifier: workspace:*
@@ -3801,6 +3801,6 @@ packages:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
     dev: true
 
-  /zod@4.3.2:
-    resolution: {integrity: sha512-b8L8yn4rIVfiXyHAmnr52/ZEpDumlT0bmxiq3Ws1ybrinhflGpt12Hvv54kYnEsGPRs6o/Ka3/ppA2OWY21IVg==}
+  /zod@4.3.4:
+    resolution: {integrity: sha512-Zw/uYiiyF6pUT1qmKbZziChgNPRu+ZRneAsMUDU6IwmXdWt5JwcUfy2bvLOCUtz5UniaN/Zx5aFttZYbYc7O/A==}
     dev: false
