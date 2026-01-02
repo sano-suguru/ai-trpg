@@ -2,6 +2,10 @@
  * Character tRPC Router
  *
  * キャラクター関連のtRPCエンドポイント
+ *
+ * 命名規則:
+ * - get / list: 認証不要の公開データ取得
+ * - getMine / listMine: 認証必須の自分のデータ取得
  */
 
 import { TRPCError } from "@trpc/server";
@@ -17,8 +21,9 @@ import type { CharacterRepository } from "./repository";
 import {
   createCharacterUseCase,
   getCharacterUseCase,
+  getMyCharacterUseCase,
   listMyCharactersUseCase,
-  listBorrowableCharactersUseCase,
+  listCharactersUseCase,
   updateCharacterUseCase,
   deleteCharacterUseCase,
 } from "./useCases";
@@ -42,10 +47,9 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
     generateId: deps.generateId,
   });
   const getCharacter = getCharacterUseCase({ repository: deps.repository });
+  const getMyCharacter = getMyCharacterUseCase({ repository: deps.repository });
+  const listCharacters = listCharactersUseCase({ repository: deps.repository });
   const listMyCharacters = listMyCharactersUseCase({
-    repository: deps.repository,
-  });
-  const listBorrowable = listBorrowableCharactersUseCase({
     repository: deps.repository,
   });
   const updateCharacter = updateCharacterUseCase({
@@ -56,6 +60,62 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
   });
 
   return router({
+    // ========================================
+    // Public Procedures (認証不要)
+    // ========================================
+
+    /**
+     * キャラクター取得（公開）
+     *
+     * 認証なしでアクセス可能
+     * isPublic=true かつ lending !== 'private' のキャラクターのみ
+     */
+    get: publicProcedure
+      .input(z.object({ id: z.string().uuid() }))
+      .query(async ({ input }) => {
+        const characterIdResult = createCharacterId(input.id);
+        if (characterIdResult.isErr()) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: characterIdResult.error.message,
+          });
+        }
+
+        const result = await getCharacter(characterIdResult.value);
+
+        if (result.isErr()) {
+          throw new TRPCError({
+            code: mapErrorCode(result.error),
+            message: result.error.message,
+          });
+        }
+
+        return result.value;
+      }),
+
+    /**
+     * キャラクター一覧（公開）
+     *
+     * 認証なしでアクセス可能
+     * 借用可能なキャラクターのみ
+     */
+    list: publicProcedure.query(async () => {
+      const result = await listCharacters();
+
+      if (result.isErr()) {
+        throw new TRPCError({
+          code: mapErrorCode(result.error),
+          message: result.error.message,
+        });
+      }
+
+      return result.value;
+    }),
+
+    // ========================================
+    // Protected Procedures (認証必須)
+    // ========================================
+
     /**
      * キャラクター作成
      */
@@ -75,9 +135,11 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
       }),
 
     /**
-     * キャラクター取得
+     * 自分のキャラクター取得
+     *
+     * 所有者のみアクセス可能
      */
-    get: protectedProcedure
+    getMine: protectedProcedure
       .input(z.object({ id: z.string().uuid() }))
       .query(async ({ ctx, input }) => {
         const characterIdResult = createCharacterId(input.id);
@@ -88,7 +150,10 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
           });
         }
 
-        const result = await getCharacter(ctx.user.id, characterIdResult.value);
+        const result = await getMyCharacter(
+          ctx.user.id,
+          characterIdResult.value,
+        );
 
         if (result.isErr()) {
           throw new TRPCError({
@@ -105,22 +170,6 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
      */
     listMine: protectedProcedure.query(async ({ ctx }) => {
       const result = await listMyCharacters(ctx.user.id);
-
-      if (result.isErr()) {
-        throw new TRPCError({
-          code: mapErrorCode(result.error),
-          message: result.error.message,
-        });
-      }
-
-      return result.value;
-    }),
-
-    /**
-     * 借用可能なキャラクター一覧（パブリック）
-     */
-    listBorrowable: publicProcedure.query(async () => {
-      const result = await listBorrowable();
 
       if (result.isErr()) {
         throw new TRPCError({

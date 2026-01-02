@@ -10,23 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DungeonsRouteImport } from './routes/dungeons'
-import { Route as CharactersRouteImport } from './routes/characters'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DungeonsIndexRouteImport } from './routes/dungeons/index'
+import { Route as CharactersIndexRouteImport } from './routes/characters/index'
+import { Route as DungeonsIdRouteImport } from './routes/dungeons/$id'
+import { Route as CharactersIdRouteImport } from './routes/characters/$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DungeonsRoute = DungeonsRouteImport.update({
-  id: '/dungeons',
-  path: '/dungeons',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CharactersRoute = CharactersRouteImport.update({
-  id: '/characters',
-  path: '/characters',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -34,39 +26,86 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DungeonsIndexRoute = DungeonsIndexRouteImport.update({
+  id: '/dungeons/',
+  path: '/dungeons/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharactersIndexRoute = CharactersIndexRouteImport.update({
+  id: '/characters/',
+  path: '/characters/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DungeonsIdRoute = DungeonsIdRouteImport.update({
+  id: '/dungeons/$id',
+  path: '/dungeons/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharactersIdRoute = CharactersIdRouteImport.update({
+  id: '/characters/$id',
+  path: '/characters/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/characters': typeof CharactersRoute
-  '/dungeons': typeof DungeonsRoute
   '/login': typeof LoginRoute
+  '/characters/$id': typeof CharactersIdRoute
+  '/dungeons/$id': typeof DungeonsIdRoute
+  '/characters': typeof CharactersIndexRoute
+  '/dungeons': typeof DungeonsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/characters': typeof CharactersRoute
-  '/dungeons': typeof DungeonsRoute
   '/login': typeof LoginRoute
+  '/characters/$id': typeof CharactersIdRoute
+  '/dungeons/$id': typeof DungeonsIdRoute
+  '/characters': typeof CharactersIndexRoute
+  '/dungeons': typeof DungeonsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/characters': typeof CharactersRoute
-  '/dungeons': typeof DungeonsRoute
   '/login': typeof LoginRoute
+  '/characters/$id': typeof CharactersIdRoute
+  '/dungeons/$id': typeof DungeonsIdRoute
+  '/characters/': typeof CharactersIndexRoute
+  '/dungeons/': typeof DungeonsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/characters' | '/dungeons' | '/login'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/characters/$id'
+    | '/dungeons/$id'
+    | '/characters'
+    | '/dungeons'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/characters' | '/dungeons' | '/login'
-  id: '__root__' | '/' | '/characters' | '/dungeons' | '/login'
+  to:
+    | '/'
+    | '/login'
+    | '/characters/$id'
+    | '/dungeons/$id'
+    | '/characters'
+    | '/dungeons'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/characters/$id'
+    | '/dungeons/$id'
+    | '/characters/'
+    | '/dungeons/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CharactersRoute: typeof CharactersRoute
-  DungeonsRoute: typeof DungeonsRoute
   LoginRoute: typeof LoginRoute
+  CharactersIdRoute: typeof CharactersIdRoute
+  DungeonsIdRoute: typeof DungeonsIdRoute
+  CharactersIndexRoute: typeof CharactersIndexRoute
+  DungeonsIndexRoute: typeof DungeonsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,20 +117,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dungeons': {
-      id: '/dungeons'
-      path: '/dungeons'
-      fullPath: '/dungeons'
-      preLoaderRoute: typeof DungeonsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/characters': {
-      id: '/characters'
-      path: '/characters'
-      fullPath: '/characters'
-      preLoaderRoute: typeof CharactersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -99,14 +124,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dungeons/': {
+      id: '/dungeons/'
+      path: '/dungeons'
+      fullPath: '/dungeons'
+      preLoaderRoute: typeof DungeonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/characters/': {
+      id: '/characters/'
+      path: '/characters'
+      fullPath: '/characters'
+      preLoaderRoute: typeof CharactersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dungeons/$id': {
+      id: '/dungeons/$id'
+      path: '/dungeons/$id'
+      fullPath: '/dungeons/$id'
+      preLoaderRoute: typeof DungeonsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/characters/$id': {
+      id: '/characters/$id'
+      path: '/characters/$id'
+      fullPath: '/characters/$id'
+      preLoaderRoute: typeof CharactersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CharactersRoute: CharactersRoute,
-  DungeonsRoute: DungeonsRoute,
   LoginRoute: LoginRoute,
+  CharactersIdRoute: CharactersIdRoute,
+  DungeonsIdRoute: DungeonsIdRoute,
+  CharactersIndexRoute: CharactersIndexRoute,
+  DungeonsIndexRoute: DungeonsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

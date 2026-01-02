@@ -11,7 +11,8 @@
     "./constants/*": "./src/constants/*.ts",
     "./lib/*": "./src/lib/*.ts",
     "./domain": "./src/domain/index.ts",
-    "./domain/*": "./src/domain/*.ts"
+    "./domain/*": "./src/domain/*.ts",
+    "./fixtures": "./src/fixtures/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -31,6 +31,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use conventional commits format: `type(scope): message`
 - Keep commit messages concise and in Japanese or English (match the project context)
 
+### Ultrathink (Deep Reasoning)
+- Always use extended thinking for complex tasks - design before implementation
+- Compare multiple approaches and explicitly state trade-offs
+- State assumptions explicitly and ask for clarification when uncertain
+- Analyze impact on existing code when making architecture changes or adding new features
+
+### Sequential Thinking MCP (Complex Problem Solving)
+- Use the `sequential-thinking` MCP tool for complex problems or design decisions
+- Particularly effective for:
+  - Breaking down multi-step problems
+  - When design revision or direction change is needed
+  - Problems with unclear initial scope
+  - Hypothesis generation and verification
+- Question assumptions at each step and revise approach as needed
+
 ## Project Overview
 
 AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG replay game. Players create characters, form parties, select dungeons, and the AI generates narrative sessions as TRPG replay text. The game emphasizes narrative and lore over numerical stats.
@@ -145,6 +160,7 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Wrap external promises with `wrapPromise()`, `wrapDbOperation()`, or `wrapExternalCall()`
 - Use `fromNullable()` to convert nullable values to Result
 - Use `tryCatch()` only at boundaries with external libraries that throw
+- **Exception**: Standalone CLI scripts and entry points may use try-catch for top-level error handling
 
 ## Code Conventions
 
@@ -165,7 +181,9 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 | Domain primitives (IDs) | `shared/domain/primitives/` |
 | Error types | `shared/types/` |
 | Zod schemas | `shared/schemas/` |
-| Master data | `shared/constants/` |
+| Master data (game constants) | `shared/constants/` |
+| Test fixtures (seed metadata) | `shared/fixtures/` |
+| Seed data (dev/demo samples) | `api/scripts/data/` |
 | UI components | `web/components/{domain}/` |
 | Feature slices | `api/features/{domain}/` |
 | DB schema | `api/infrastructure/database/schema/` |
@@ -185,6 +203,7 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Ignoring lint warnings - always fix them
 - Dead code for "backward compatibility" - delete unused code immediately
 - File extensions (`.js`/`.ts`) in import statements
+- Ad-hoc naming for backward compatibility - rename existing code instead of adding awkwardly named alternatives (e.g., don't add `getPublic` when you should rename `get` to `getMine`)
 
 ## Game Domain Concepts
 

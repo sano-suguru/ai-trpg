@@ -51,6 +51,16 @@
 - Use `fromNullable()` for nullable values
 - Use `tryCatch()` only at boundaries with external libraries
 
+## API Naming Conventions (tRPC)
+
+| Pattern | Auth | Purpose |
+|---------|------|---------|
+| `get` / `list` | Not required | Public data retrieval |
+| `getMine` / `listMine` | Required | Own data retrieval |
+| `create` / `update` / `delete` | Required | Data modification |
+
+**Prohibited**: Ad-hoc naming for backward compatibility. Rename existing code instead of adding awkwardly named alternatives (e.g., don't add `getPublic` when you should rename `get` to `getMine`).
+
 ## Prohibited Practices
 
 - Circular dependencies

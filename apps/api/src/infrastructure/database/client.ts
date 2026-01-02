@@ -32,5 +32,5 @@ export function createDatabase(connectionString: string) {
     max: 1,
   });
 
-  return drizzle(client, { schema });
+  return drizzle({ client, schema });
 }

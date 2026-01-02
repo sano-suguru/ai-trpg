@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm --filter @ai-trpg/web exec playwright --version | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @ai-trpg/web exec playwright install --with-deps chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @ai-trpg/web exec playwright install-deps chromium
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        # CI起動時間とリソース削減のため未使用サービスを除外
+        # 必要: postgres, auth (GoTrue), postgrest, kong
+        # 除外: realtime, storage, imgproxy, edge-runtime, logflare, vector, supavisor, studio, postgres-meta
+        run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor,studio,postgres-meta
+
+      - name: Set environment variables
+        run: |
+          echo "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres" >> $GITHUB_ENV
+          echo "SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_KEY=$(supabase status --output json | jq -r '.SERVICE_ROLE_KEY')" >> $GITHUB_ENV
+          # Web(Vite) 側で参照する環境変数（import.meta.env）
+          echo "VITE_SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')" >> $GITHUB_ENV
+          echo "VITE_SUPABASE_ANON_KEY=$(supabase status --output json | jq -r '.ANON_KEY')" >> $GITHUB_ENV
+
+      - name: Create .dev.vars for wrangler
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL" > apps/api/.dev.vars
+          echo "SUPABASE_URL=$SUPABASE_URL" >> apps/api/.dev.vars
+          echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> apps/api/.dev.vars
+
+      - name: Create .env for Vite
+        # Viteはimport.meta.envを.envファイルから読み込むため、GITHUB_ENVでは不十分
+        run: |
+          echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" > apps/web/.env
+          echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> apps/web/.env
+
+      - name: Push database schema
+        run: pnpm --filter @ai-trpg/api db:push
+
+      - name: Seed test data
+        run: pnpm --filter @ai-trpg/api seed
+
+      - name: Debug - Check environment and services
+        run: |
+          echo "=== Environment Variables ==="
+          echo "DATABASE_URL: $DATABASE_URL"
+          echo "SUPABASE_URL: $SUPABASE_URL"
+          echo "VITE_SUPABASE_URL is set: $([ -n \"$VITE_SUPABASE_URL\" ] && echo yes || echo no)"
+          echo "VITE_SUPABASE_ANON_KEY is set: $([ -n \"$VITE_SUPABASE_ANON_KEY\" ] && echo yes || echo no)"
+          echo "=== .dev.vars contents ==="
+          cat apps/api/.dev.vars
+          echo ""
+          echo "=== .env contents (Vite) ==="
+          cat apps/web/.env
+          echo ""
+          echo "=== Test Supabase connectivity ==="
+          curl -s http://127.0.0.1:54321/rest/v1/ -H "apikey: $SUPABASE_SERVICE_KEY" | head -100 || echo "Supabase not accessible"
+
+      - name: Run E2E tests
+        run: pnpm --filter @ai-trpg/web e2e
+        env:
+          CI: true
+          DEBUG: pw:webserver
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
+
+      - name: Upload test videos on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: apps/web/test-results/
+          retention-days: 7

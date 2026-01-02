@@ -16,7 +16,7 @@ import { supabase } from "./supabase";
 
 function getApiUrl(): string {
   // 環境変数から取得、なければデフォルト
-  // wrangler devのデフォルトポートは8787だが、使用中の場合8788になる
+  // wrangler dev のデフォルトポートは 8787（wrangler pages dev は 8788）
   return import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 }
 

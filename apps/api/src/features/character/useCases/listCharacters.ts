@@ -20,19 +20,24 @@ export interface ListCharactersDeps {
 // ========================================
 
 /**
- * 自分のキャラクター一覧取得ユースケース
+ * キャラクター一覧取得ユースケース（公開）
+ *
+ * 認証なしでアクセス可能
+ * 借用可能（isPublic=true かつ lending !== 'private'）なキャラクターのみ
  */
-export function listMyCharactersUseCase(deps: ListCharactersDeps) {
-  return (userId: UserId): ResultAsync<readonly Character[], AppError> => {
-    return deps.repository.findByOwnerId(userId);
+export function listCharactersUseCase(deps: ListCharactersDeps) {
+  return (): ResultAsync<readonly Character[], AppError> => {
+    return deps.repository.findBorrowable();
   };
 }
 
 /**
- * 借用可能なキャラクター一覧取得ユースケース
+ * 自分のキャラクター一覧取得ユースケース
+ *
+ * 認証必須
  */
-export function listBorrowableCharactersUseCase(deps: ListCharactersDeps) {
-  return (): ResultAsync<readonly Character[], AppError> => {
-    return deps.repository.findBorrowable();
+export function listMyCharactersUseCase(deps: ListCharactersDeps) {
+  return (userId: UserId): ResultAsync<readonly Character[], AppError> => {
+    return deps.repository.findByOwnerId(userId);
   };
 }
