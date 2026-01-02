@@ -31,6 +31,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use conventional commits format: `type(scope): message`
 - Keep commit messages concise and in Japanese or English (match the project context)
 
+### Ultrathink (Deep Reasoning)
+- Always use extended thinking for complex tasks - design before implementation
+- Compare multiple approaches and explicitly state trade-offs
+- State assumptions explicitly and ask for clarification when uncertain
+- Analyze impact on existing code when making architecture changes or adding new features
+
+### Sequential Thinking MCP (Complex Problem Solving)
+- Use the `sequential-thinking` MCP tool for complex problems or design decisions
+- Particularly effective for:
+  - Breaking down multi-step problems
+  - When design revision or direction change is needed
+  - Problems with unclear initial scope
+  - Hypothesis generation and verification
+- Question assumptions at each step and revise approach as needed
+
 ## Project Overview
 
 AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG replay game. Players create characters, form parties, select dungeons, and the AI generates narrative sessions as TRPG replay text. The game emphasizes narrative and lore over numerical stats.

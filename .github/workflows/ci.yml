@@ -58,28 +58,23 @@ jobs:
         # 除外: realtime (WebSocket), storage (ファイル), imgproxy, edge-runtime, logflare, vector, supavisor
         run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
 
-      - name: Get Supabase credentials and create .dev.vars
+      - name: Set environment variables
         run: |
-          SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')
-          SUPABASE_SERVICE_KEY=$(supabase status --output json | jq -r '.SERVICE_ROLE_KEY')
+          echo "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres" >> $GITHUB_ENV
+          echo "SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_KEY=$(supabase status --output json | jq -r '.SERVICE_ROLE_KEY')" >> $GITHUB_ENV
 
-          cat > apps/api/.dev.vars << EOF
-          DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-          SUPABASE_URL=${SUPABASE_URL}
-          SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-          EOF
-
-          echo "Created .dev.vars with Supabase credentials"
+      - name: Create .dev.vars for wrangler
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL" > apps/api/.dev.vars
+          echo "SUPABASE_URL=$SUPABASE_URL" >> apps/api/.dev.vars
+          echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> apps/api/.dev.vars
 
       - name: Push database schema
         run: pnpm --filter @ai-trpg/api db:push
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Seed test data
         run: pnpm --filter @ai-trpg/api seed
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Run E2E tests
         run: pnpm --filter @ai-trpg/web e2e
