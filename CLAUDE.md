@@ -145,6 +145,7 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Wrap external promises with `wrapPromise()`, `wrapDbOperation()`, or `wrapExternalCall()`
 - Use `fromNullable()` to convert nullable values to Result
 - Use `tryCatch()` only at boundaries with external libraries that throw
+- **Exception**: Standalone CLI scripts and entry points may use try-catch for top-level error handling
 
 ## Code Conventions
 
@@ -165,7 +166,9 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 | Domain primitives (IDs) | `shared/domain/primitives/` |
 | Error types | `shared/types/` |
 | Zod schemas | `shared/schemas/` |
-| Master data | `shared/constants/` |
+| Master data (game constants) | `shared/constants/` |
+| Test fixtures (seed metadata) | `shared/fixtures/` |
+| Seed data (dev/demo samples) | `api/scripts/data/` |
 | UI components | `web/components/{domain}/` |
 | Feature slices | `api/features/{domain}/` |
 | DB schema | `api/infrastructure/database/schema/` |
@@ -185,6 +188,7 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Ignoring lint warnings - always fix them
 - Dead code for "backward compatibility" - delete unused code immediately
 - File extensions (`.js`/`.ts`) in import statements
+- Ad-hoc naming for backward compatibility - rename existing code instead of adding awkwardly named alternatives (e.g., don't add `getPublic` when you should rename `get` to `getMine`)
 
 ## Game Domain Concepts
 

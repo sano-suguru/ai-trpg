@@ -9,24 +9,8 @@ src/
 ├── features/              # Vertical Slice（機能単位）
 │   ├── character/         # キャラクター機能
 │   └── dungeon/           # ダンジョン機能
-│       ├── router.ts      # tRPCルーター定義
-│       ├── repository.ts  # データアクセス層
-│       ├── mapper.ts      # DB ⇔ ドメインモデル変換
-│       ├── useCases/      # ユースケース
-│       │   ├── createCharacter.ts
-│       │   ├── getCharacter.ts
-│       │   ├── listCharacters.ts
-│       │   ├── updateCharacter.ts
-│       │   └── deleteCharacter.ts
-│       └── index.ts       # 機能のエクスポート
-├── infrastructure/        # インフラ層
-│   └── database/          # DBクライアント、スキーマ
-│       ├── client.ts      # Drizzle クライアント
-│       └── schema/        # Drizzle スキーマ定義
+├── infrastructure/        # インフラ層（DB、外部サービス）
 ├── trpc/                  # tRPC設定
-│   ├── context.ts         # コンテキスト定義
-│   ├── router.ts          # ルートルーター
-│   └── index.ts           # tRPC初期化
 └── index.ts               # エントリーポイント
 ```
 
@@ -37,7 +21,7 @@ src/
 機能単位でコードを凝集させる。レイヤー横断ではなく、機能縦断でファイルを配置。
 
 ```
-features/character/
+features/{domain}/
 ├── router.ts      # API層: エンドポイント定義
 ├── useCases/      # Application層: ビジネスロジック
 ├── repository.ts  # Infrastructure層: データアクセス
@@ -59,49 +43,22 @@ Router → UseCase → Repository → Database
 ## コマンド
 
 ```bash
-# 開発サーバー起動
-pnpm dev
-
-# 型チェック
-pnpm typecheck
-
-# lint
-pnpm lint
-
-# ビルド
-pnpm build
-
-# デプロイ
-pnpm deploy
-
-# Cloudflare型生成
-pnpm cf-typegen
+pnpm dev        # 開発サーバー起動
+pnpm typecheck  # 型チェック
+pnpm lint       # lint
+pnpm build      # ビルド
+pnpm deploy     # デプロイ
 ```
 
 ## API設計
 
-### tRPCルーター
+### tRPCルーター命名規則
 
-```typescript
-// features/character/router.ts
-export const characterRouter = router({
-  list: publicProcedure.query(...),      // 公開キャラ一覧
-  get: publicProcedure.input(...).query(...),  // キャラ取得
-  create: protectedProcedure.input(...).mutation(...),  // 作成
-  update: protectedProcedure.input(...).mutation(...),  // 更新
-  delete: protectedProcedure.input(...).mutation(...),  // 削除
-});
-
-// features/dungeon/router.ts
-export const dungeonRouter = router({
-  list: publicProcedure.query(...),      // 公開ダンジョン一覧
-  listMine: protectedProcedure.query(...),  // 自分のダンジョン
-  get: publicProcedure.input(...).query(...),  // ダンジョン取得
-  create: protectedProcedure.input(...).mutation(...),  // 作成
-  update: protectedProcedure.input(...).mutation(...),  // 更新
-  delete: protectedProcedure.input(...).mutation(...),  // 削除
-});
-```
+| パターン | 認証 | 用途 |
+|----------|------|------|
+| `get` / `list` | 不要 | 公開データ取得 |
+| `getMine` / `listMine` | 必須 | 自分のデータ取得 |
+| `create` / `update` / `delete` | 必須 | データ変更 |
 
 ### 認証
 
@@ -110,35 +67,12 @@ export const dungeonRouter = router({
 
 ### エラーハンドリング
 
-```typescript
-// UseCase内でResult型を使用
-export const getCharacter = (
-  id: CharacterId,
-  repo: CharacterRepository
-): ResultAsync<Character, AppError> => {
-  return repo.findById(id)
-    .andThen(fromNullable(() => Errors.notFound('Character', id)));
-};
-
-// Router内でHTTPレスポンスに変換
-.query(async ({ input }) => {
-  const result = await getCharacter(input.id, repo);
-  return result.match({
-    ok: (char) => char,
-    err: (e) => { throw new TRPCError(toTRPCError(e)); }
-  });
-});
-```
+- UseCase内で `Result` 型を使用
+- Router内で `TRPCError` に変換
 
 ## 環境変数
 
 `.dev.vars` を作成（`.dev.vars.example` を参照）。
-
-```bash
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_SERVICE_KEY=<from npx supabase status>
-```
 
 ## Feature追加手順
 
@@ -148,4 +82,3 @@ SUPABASE_SERVICE_KEY=<from npx supabase status>
 4. `repository.ts` でデータアクセス実装
 5. `mapper.ts` で変換ロジック実装
 6. `trpc/router.ts` にルーター追加
-7. このREADME.mdを更新

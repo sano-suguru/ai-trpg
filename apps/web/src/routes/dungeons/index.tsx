@@ -4,11 +4,11 @@
  * 公開ダンジョンを一覧表示
  */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTRPC } from "@/lib/trpc";
 import { useQuery } from "@tanstack/react-query";
 
-export const Route = createFileRoute("/dungeons")({
+export const Route = createFileRoute("/dungeons/")({
   component: DungeonsPage,
 });
 
@@ -43,9 +43,11 @@ function DungeonsPage() {
       {dungeons && dungeons.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {dungeons.map((dungeon) => (
-            <div
+            <Link
               key={dungeon.id}
-              className="p-4 bg-zinc-800 rounded-lg border border-zinc-700"
+              to="/dungeons/$id"
+              params={{ id: dungeon.id }}
+              className="block p-4 bg-zinc-800 rounded-lg border border-zinc-700 hover:border-amber-500/50 hover:bg-zinc-800/80 transition-colors"
             >
               <h2 className="text-xl font-semibold">{dungeon.name}</h2>
               {dungeon.alias && (
@@ -61,7 +63,7 @@ function DungeonsPage() {
                   </span>
                 ))}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

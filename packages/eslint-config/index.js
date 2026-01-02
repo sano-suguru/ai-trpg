@@ -20,5 +20,16 @@ module.exports = {
     "no-throw-literal": "error",
     // any型の使用を警告
     "@typescript-eslint/no-explicit-any": "warn",
+    // console.log禁止（本番コードでの使用を防ぐ）
+    "no-console": "error",
   },
+  overrides: [
+    {
+      // CLIスクリプトではconsole出力を許可
+      files: ["**/scripts/**/*.ts"],
+      rules: {
+        "no-console": "off",
+      },
+    },
+  ],
 };

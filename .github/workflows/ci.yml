@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @ai-trpg/web exec playwright install --with-deps chromium
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        # CI起動時間とリソース削減のため未使用サービスを除外
+        # 必要: postgres, auth (GoTrue), postgrest, studio
+        # 除外: realtime (WebSocket), storage (ファイル), imgproxy, edge-runtime, logflare, vector, supavisor
+        run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
+
+      - name: Get Supabase credentials and create .dev.vars
+        run: |
+          SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')
+          SUPABASE_SERVICE_KEY=$(supabase status --output json | jq -r '.SERVICE_ROLE_KEY')
+
+          cat > apps/api/.dev.vars << EOF
+          DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          SUPABASE_URL=${SUPABASE_URL}
+          SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+          EOF
+
+          echo "Created .dev.vars with Supabase credentials"
+
+      - name: Seed test data
+        run: pnpm --filter @ai-trpg/api seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+      - name: Run E2E tests
+        run: pnpm --filter @ai-trpg/web e2e
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
+
+      - name: Upload test videos on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: apps/web/test-results/
+          retention-days: 7

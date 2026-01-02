@@ -5,9 +5,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 2 : 4, // 要素待機方式で並列実行可能
+  timeout: 30000, // 各テストのタイムアウト（デフォルト30秒）
+  expect: {
+    timeout: 15000, // expectのデフォルトタイムアウト
+  },
   reporter: [
-    ["html", { open: "never", outputFolder: "./e2e-results/report" }],
+    ["html", { open: "never", outputFolder: "./playwright-report" }],
     ["list"],
   ],
 
@@ -25,7 +29,7 @@ export default defineConfig({
   },
 
   // 出力ディレクトリ
-  outputDir: "./e2e-results",
+  outputDir: "./test-results",
 
   projects: [
     {
@@ -34,11 +38,13 @@ export default defineConfig({
     },
   ],
 
-  // ローカル開発サーバーを自動起動
+  // ローカル開発サーバー（web + api）
+  // ローカルでは既存サーバーを再利用、CIでは新規起動
   webServer: {
     command: "pnpm dev",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    cwd: "../..",
   },
 });

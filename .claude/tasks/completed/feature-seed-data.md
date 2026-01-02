@@ -314,5 +314,5 @@ export const Route = createFileRoute("/characters/$id")({
 
 **作成日:** 2026-01-01
 **担当:** Claude
-**ステータス:** Ready
+**ステータス:** Completed
 **前提タスク:** なし（認証と並行可能）
