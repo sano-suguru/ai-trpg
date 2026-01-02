@@ -10,19 +10,7 @@ import { SEED_CHARACTERS } from "@ai-trpg/shared/fixtures";
 
 test.describe("キャラクター一覧", () => {
   test("一覧ページが表示される", async ({ page }) => {
-    // ブラウザコンソールログを収集
-    const consoleLogs: string[] = [];
-    page.on("console", (msg) => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));
-    page.on("pageerror", (err) => consoleLogs.push(`[ERROR] ${err.message}`));
-
     await page.goto("/characters");
-
-    // デバッグ: ページのHTML構造を出力
-    const html = await page.content();
-    console.log("=== Page HTML (first 2000 chars) ===");
-    console.log(html.substring(0, 2000));
-    console.log("=== Console Logs ===");
-    consoleLogs.forEach((log) => console.log(log));
 
     // ページタイトルの確認
     await expect(page.getByRole("heading", { name: "キャラクター" })).toBeVisible();
