@@ -45,8 +45,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm --filter @ai-trpg/web exec playwright --version | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm --filter @ai-trpg/web exec playwright install --with-deps chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @ai-trpg/web exec playwright install-deps chromium
 
       - uses: supabase/setup-cli@v1
         with:
