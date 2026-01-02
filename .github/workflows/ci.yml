@@ -100,9 +100,6 @@ jobs:
           echo "=== .dev.vars contents ==="
           cat apps/api/.dev.vars
           echo ""
-          echo "=== Test API connectivity ==="
-          curl -s http://localhost:8787/trpc/character.list || echo "API not running yet"
-          echo ""
           echo "=== Test Supabase connectivity ==="
           curl -s http://127.0.0.1:54321/rest/v1/ -H "apikey: $SUPABASE_SERVICE_KEY" | head -100 || echo "Supabase not accessible"
 
