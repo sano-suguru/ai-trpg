@@ -92,6 +92,20 @@ jobs:
       - name: Seed test data
         run: pnpm --filter @ai-trpg/api seed
 
+      - name: Debug - Check environment and services
+        run: |
+          echo "=== Environment Variables ==="
+          echo "DATABASE_URL: $DATABASE_URL"
+          echo "SUPABASE_URL: $SUPABASE_URL"
+          echo "=== .dev.vars contents ==="
+          cat apps/api/.dev.vars
+          echo ""
+          echo "=== Test API connectivity ==="
+          curl -s http://localhost:8787/trpc/character.list || echo "API not running yet"
+          echo ""
+          echo "=== Test Supabase connectivity ==="
+          curl -s http://127.0.0.1:54321/rest/v1/ -H "apikey: $SUPABASE_SERVICE_KEY" | head -100 || echo "Supabase not accessible"
+
       - name: Run E2E tests
         run: pnpm --filter @ai-trpg/web e2e
         env:
