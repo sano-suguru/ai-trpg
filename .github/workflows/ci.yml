@@ -73,32 +73,40 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/docker-images
-          key: docker-supabase-v1
+          key: docker-supabase-v2
 
       - name: Load cached Docker images
         if: steps.docker-cache.outputs.cache-hit == 'true'
         run: |
           for img in /tmp/docker-images/*.tar; do
+            echo "Loading $img..."
             docker load -i "$img" &
           done
           wait
+          echo "Loaded images:"
+          docker images
 
       - name: Start Supabase
         # CI起動時間とリソース削減のため未使用サービスを除外
         # 必要: postgres, auth (GoTrue), postgrest, kong
-        # 除外: realtime, storage, imgproxy, edge-runtime, logflare, vector, supavisor, studio, postgres-meta
-        run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor,studio,postgres-meta
+        # 除外: realtime, storage-api, imgproxy, edge-runtime, logflare, vector, supavisor, studio, postgres-meta
+        run: supabase start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor,studio,postgres-meta
 
       - name: Save Docker images for cache
         if: steps.docker-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p /tmp/docker-images
-          # Supabaseが使用する主要イメージを保存
-          docker save supabase/postgres -o /tmp/docker-images/postgres.tar &
-          docker save supabase/gotrue -o /tmp/docker-images/gotrue.tar &
-          docker save supabase/postgrest -o /tmp/docker-images/postgrest.tar &
-          docker save kong -o /tmp/docker-images/kong.tar &
-          wait
+          echo "Available images after supabase start:"
+          docker images
+          # Supabaseが使用する主要イメージを保存（ghcr.ioプレフィックス付き）
+          echo "Saving images..."
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^ghcr.io/supabase/(postgres|gotrue|postgrest)|kong" | while read img; do
+            filename=$(echo "$img" | tr '/:' '_').tar
+            echo "Saving $img to $filename"
+            docker save "$img" -o "/tmp/docker-images/$filename"
+          done
+          echo "Saved files:"
+          ls -lh /tmp/docker-images/
 
       - name: Set environment variables
         run: |
