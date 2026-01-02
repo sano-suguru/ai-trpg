@@ -71,6 +71,11 @@ jobs:
 
           echo "Created .dev.vars with Supabase credentials"
 
+      - name: Push database schema
+        run: pnpm --filter @ai-trpg/api db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
       - name: Seed test data
         run: pnpm --filter @ai-trpg/api seed
         env:
