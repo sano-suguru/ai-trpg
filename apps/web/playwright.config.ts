@@ -40,13 +40,27 @@ export default defineConfig({
 
   // ローカル開発サーバー（web + api）
   // ローカルでは既存サーバーを再利用、CIでは新規起動
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-    cwd: "../..",
-    stdout: "pipe",
-    stderr: "pipe",
-  },
+  // 両サーバーが準備できるまでPlaywrightが待機する
+  webServer: [
+    {
+      name: "API",
+      command: "pnpm --filter @ai-trpg/api dev",
+      url: "http://localhost:8787/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+      cwd: "../..",
+      stdout: "pipe",
+      stderr: "pipe",
+    },
+    {
+      name: "Web",
+      command: "pnpm --filter @ai-trpg/web dev",
+      url: "http://localhost:5173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+      cwd: "../..",
+      stdout: "pipe",
+      stderr: "pipe",
+    },
+  ],
 });
