@@ -68,11 +68,37 @@ jobs:
         with:
           version: latest
 
+      - name: Cache Docker images
+        id: docker-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-images
+          key: docker-supabase-v1
+
+      - name: Load cached Docker images
+        if: steps.docker-cache.outputs.cache-hit == 'true'
+        run: |
+          for img in /tmp/docker-images/*.tar; do
+            docker load -i "$img" &
+          done
+          wait
+
       - name: Start Supabase
         # CI起動時間とリソース削減のため未使用サービスを除外
         # 必要: postgres, auth (GoTrue), postgrest, kong
         # 除外: realtime, storage, imgproxy, edge-runtime, logflare, vector, supavisor, studio, postgres-meta
         run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor,studio,postgres-meta
+
+      - name: Save Docker images for cache
+        if: steps.docker-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/docker-images
+          # Supabaseが使用する主要イメージを保存
+          docker save supabase/postgres -o /tmp/docker-images/postgres.tar &
+          docker save supabase/gotrue -o /tmp/docker-images/gotrue.tar &
+          docker save supabase/postgrest -o /tmp/docker-images/postgrest.tar &
+          docker save kong -o /tmp/docker-images/kong.tar &
+          wait
 
       - name: Set environment variables
         run: |
