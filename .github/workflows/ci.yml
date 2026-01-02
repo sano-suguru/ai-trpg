@@ -70,9 +70,9 @@ jobs:
 
       - name: Start Supabase
         # CI起動時間とリソース削減のため未使用サービスを除外
-        # 必要: postgres, auth (GoTrue), postgrest, studio
-        # 除外: realtime (WebSocket), storage (ファイル), imgproxy, edge-runtime, logflare, vector, supavisor
-        run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
+        # 必要: postgres, auth (GoTrue), postgrest, kong
+        # 除外: realtime, storage, imgproxy, edge-runtime, logflare, vector, supavisor, studio, postgres-meta
+        run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor,studio,postgres-meta
 
       - name: Set environment variables
         run: |
