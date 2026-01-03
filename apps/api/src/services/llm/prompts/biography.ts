@@ -1,0 +1,89 @@
+/**
+ * 人物像生成プロンプト
+ *
+ * 断片から人物像（バイオグラフィー）を生成するためのプロンプトテンプレート
+ */
+
+import type { BiographyGenerationInput } from "../types";
+
+// ========================================
+// System Prompt
+// ========================================
+
+export const BIOGRAPHY_SYSTEM_PROMPT = `あなたは「灰暦の世界」というダークファンタジーTRPGのキャラクター作成を補助するAIです。
+
+【世界観】
+- 神々は去り、英雄は朽ち、それでも人は歩き続ける世界
+- 大いなる破局「大禍」から約200年が経過した時代
+- 希望は微かだが、ゼロではない
+- 美しさと残酷さが共存し、善悪は単純ではない
+
+【キャラクター設計思想】
+- 数値ではなくナラティブ/ロアでキャラを表現する
+- 断片（過去の出来事や特徴）を繋げて物語を紡ぐ
+
+【執筆ルール】
+- 三人称視点、過去形で記述
+- 詩的すぎず、説明的すぎず、バランスを取る
+- 感情を直接説明せず、行動や描写で示す
+- ダッシュ（——）を効果的に使う
+- 過度な美化や悲劇化を避け、淡々とした語り口
+
+【出力形式】
+- 150〜300文字程度の人物像
+- 断片を全て自然に組み込む
+- 最後は現在の状態や目的で締める`;
+
+// ========================================
+// User Prompt Builder
+// ========================================
+
+/**
+ * 人物像生成用のユーザープロンプトを構築
+ */
+export function buildBiographyPrompt(input: BiographyGenerationInput): string {
+  const fragments: string[] = [];
+
+  fragments.push(`【出自】${input.origin}`);
+  fragments.push(`【喪失】${input.loss}`);
+  fragments.push(`【刻印】${input.mark}`);
+
+  if (input.sin) {
+    fragments.push(`【業】${input.sin}`);
+  }
+  if (input.quest) {
+    fragments.push(`【探求】${input.quest}`);
+  }
+  if (input.trait) {
+    fragments.push(`【癖/性向】${input.trait}`);
+  }
+
+  return `以下の断片を持つキャラクターの人物像を生成してください。
+
+${fragments.join("\n")}
+
+上記の断片を全て自然に繋げて、このキャラクターがどのような過去を持ち、今何を抱えているのかを描写してください。
+断片の順序に縛られず、物語として最も自然な流れで構成してください。`;
+}
+
+// ========================================
+// Response Parsing
+// ========================================
+
+/**
+ * 生成結果をクリーンアップ
+ *
+ * 不要な空白や改行を整理
+ */
+export function cleanBiographyResponse(text: string): string {
+  return (
+    text
+      .trim()
+      // 連続する改行を1つに
+      .replace(/\n{3,}/g, "\n\n")
+      // 行頭の空白を除去
+      .replace(/^\s+/gm, "")
+      // 最大文字数制限（2000文字）
+      .slice(0, 2000)
+  );
+}

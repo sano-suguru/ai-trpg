@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DungeonsIndexRouteImport } from './routes/dungeons/index'
 import { Route as CharactersIndexRouteImport } from './routes/characters/index'
 import { Route as DungeonsIdRouteImport } from './routes/dungeons/$id'
+import { Route as CharactersNewRouteImport } from './routes/characters/new'
 import { Route as CharactersIdRouteImport } from './routes/characters/$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -41,6 +42,11 @@ const DungeonsIdRoute = DungeonsIdRouteImport.update({
   path: '/dungeons/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CharactersNewRoute = CharactersNewRouteImport.update({
+  id: '/characters/new',
+  path: '/characters/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CharactersIdRoute = CharactersIdRouteImport.update({
   id: '/characters/$id',
   path: '/characters/$id',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/characters/$id': typeof CharactersIdRoute
+  '/characters/new': typeof CharactersNewRoute
   '/dungeons/$id': typeof DungeonsIdRoute
   '/characters': typeof CharactersIndexRoute
   '/dungeons': typeof DungeonsIndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/characters/$id': typeof CharactersIdRoute
+  '/characters/new': typeof CharactersNewRoute
   '/dungeons/$id': typeof DungeonsIdRoute
   '/characters': typeof CharactersIndexRoute
   '/dungeons': typeof DungeonsIndexRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/characters/$id': typeof CharactersIdRoute
+  '/characters/new': typeof CharactersNewRoute
   '/dungeons/$id': typeof DungeonsIdRoute
   '/characters/': typeof CharactersIndexRoute
   '/dungeons/': typeof DungeonsIndexRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/characters/$id'
+    | '/characters/new'
     | '/dungeons/$id'
     | '/characters'
     | '/dungeons'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/characters/$id'
+    | '/characters/new'
     | '/dungeons/$id'
     | '/characters'
     | '/dungeons'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/characters/$id'
+    | '/characters/new'
     | '/dungeons/$id'
     | '/characters/'
     | '/dungeons/'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   CharactersIdRoute: typeof CharactersIdRoute
+  CharactersNewRoute: typeof CharactersNewRoute
   DungeonsIdRoute: typeof DungeonsIdRoute
   CharactersIndexRoute: typeof CharactersIndexRoute
   DungeonsIndexRoute: typeof DungeonsIndexRoute
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DungeonsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/characters/new': {
+      id: '/characters/new'
+      path: '/characters/new'
+      fullPath: '/characters/new'
+      preLoaderRoute: typeof CharactersNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/characters/$id': {
       id: '/characters/$id'
       path: '/characters/$id'
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   CharactersIdRoute: CharactersIdRoute,
+  CharactersNewRoute: CharactersNewRoute,
   DungeonsIdRoute: DungeonsIdRoute,
   CharactersIndexRoute: CharactersIndexRoute,
   DungeonsIndexRoute: DungeonsIndexRoute,

@@ -197,13 +197,25 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Circular dependencies
 - Deep relative paths (`../../../`) - use `@/` alias
 - `any` type - use `unknown` with type guards
-- `console.log` in production code
+- `console.log` in production code (ESLint `no-console` enforced)
 - `try-catch` for control flow - use Result types instead
-- `throw` statements - return `err()` instead
+- `throw` statements - return `err()` instead (ESLint `functional/no-throw-statements` enforced)
 - Ignoring lint warnings - always fix them
 - Dead code for "backward compatibility" - delete unused code immediately
 - File extensions (`.js`/`.ts`) in import statements
 - Ad-hoc naming for backward compatibility - rename existing code instead of adding awkwardly named alternatives (e.g., don't add `getPublic` when you should rename `get` to `getMine`)
+
+### ESLint Escape Hatches
+When `throw` is unavoidable, use one of these approaches:
+- **Router files** (`**/router.ts`, `**/trpc/**/*.ts`): Automatically exempt for TRPCError
+- **Test files** (`**/*.spec.ts`, `**/*.test.ts`, `**/e2e/**/*.ts`): Automatically exempt
+- **Scripts** (`**/scripts/**/*.ts`): Automatically exempt
+- **Entry point checks**: Use inline disable comment with explanation
+  ```typescript
+  // アプリケーション起動時の必須環境変数チェック
+  // eslint-disable-next-line functional/no-throw-statements
+  throw new Error("Missing required env var");
+  ```
 
 ## Game Domain Concepts
 

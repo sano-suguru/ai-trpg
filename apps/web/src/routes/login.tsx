@@ -61,9 +61,7 @@ function LoginPage() {
 
       {isSent ? (
         <div className="text-center">
-          <p className="text-lg text-zinc-300 mb-4">
-            メールを送信しました
-          </p>
+          <p className="text-lg text-zinc-300 mb-4">メールを送信しました</p>
           <p className="text-zinc-400">
             {email} に送信されたリンクをクリックしてログインしてください。
           </p>
@@ -88,9 +86,7 @@ function LoginPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-red-400 text-sm">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
 
           <button
             type="submit"

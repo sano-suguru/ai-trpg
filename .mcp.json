@@ -12,8 +12,8 @@
         "claude-code",
         "--project",
         "/Users/sanosuguru/dev/ai-trpg",
-        "--dashboard-port",
-        "8765"
+        "--enable-web-dashboard",
+        "false"
       ],
       "env": {}
     },

@@ -24,9 +24,7 @@ function CharactersPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">キャラクター</h1>
-      <p className="text-zinc-400 mb-8">
-        断片によって紡がれた物語の主役たち
-      </p>
+      <p className="text-zinc-400 mb-8">断片によって紡がれた物語の主役たち</p>
 
       {isLoading && <div className="text-zinc-500">読み込み中...</div>}
 

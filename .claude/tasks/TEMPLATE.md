@@ -79,4 +79,5 @@ interface XXX {
 
 **作成日:** YYYY-MM-DD
 **担当:**
-**ステータス:** Draft / Ready / In Progress / Done
+**ステータス:** Draft / Ready / In Progress / Completed
+<!-- 完了したタスクは completed/ フォルダに移動 -->

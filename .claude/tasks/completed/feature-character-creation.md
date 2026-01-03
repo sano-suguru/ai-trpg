@@ -15,35 +15,35 @@
 
 ### 機能要件
 
-- [ ] 断片選択ステップ
-  - [ ] 各カテゴリ（出自/喪失/刻印/業/探求/癖）から断片を表示
-  - [ ] 必須断片（出自/喪失/刻印）を選択
-  - [ ] 任意断片（業/探求/癖）を選択（0-1個ずつ）
-  - [ ] 「全部振り直す」ボタンで新しい候補を表示
+- [x] 断片選択ステップ
+  - [x] 各カテゴリ（出自/喪失/刻印/業/探求/癖）から断片を表示
+  - [x] 必須断片（出自/喪失/刻印）を選択
+  - [x] 任意断片（業/探求/癖）を選択（0-1個ずつ）
+  - [x] 「全部振り直す」ボタンで新しい候補を表示
 
-- [ ] AI生成ステップ
-  - [ ] 選択した断片からAIが「人物像」を生成
-  - [ ] 生成中のローディング表示
-  - [ ] 生成結果のプレビュー
-  - [ ] 「再生成」「承認」「修正指示」ボタン
+- [x] AI生成ステップ
+  - [x] 選択した断片からAIが「人物像」を生成
+  - [x] 生成中のローディング表示
+  - [x] 生成結果のプレビュー
+  - [x] 「再生成」「承認」「修正指示」ボタン
 
-- [ ] 名前・行動指針ステップ
-  - [ ] 名前入力（自由入力 or AI提案）
-  - [ ] 行動指針を各場面（4つ）で選択
-  - [ ] 口調サンプル入力（任意）
+- [x] 名前・行動指針ステップ
+  - [x] 名前入力（自由入力 or AI提案）
+  - [x] 行動指針を各場面（4つ）で選択
+  - [x] 口調サンプル入力（任意）
 
-- [ ] 確認・保存ステップ
-  - [ ] 完成したキャラシートのプレビュー
-  - [ ] 公開設定（借用可否）選択
-  - [ ] 保存ボタン
+- [x] 確認・保存ステップ
+  - [x] 完成したキャラシートのプレビュー
+  - [x] 公開設定（借用可否）選択
+  - [x] 保存ボタン
 
-- [ ] 保存後、詳細ページへリダイレクト
+- [x] 保存後、詳細ページへリダイレクト
 
 ### 非機能要件
 
-- [ ] LLM生成は3-5秒以内に完了
-- [ ] 生成失敗時はフォールバックプロバイダーを使用
-- [ ] エラー時はユーザーフレンドリーなメッセージを表示
+- [x] LLM生成は3-5秒以内に完了
+- [x] 生成失敗時はフォールバックプロバイダーを使用
+- [x] エラー時はユーザーフレンドリーなメッセージを表示
 
 ## 設計
 
@@ -150,82 +150,81 @@ interface CharacterCreationStore {
 
 ### Phase 1: マスターデータ
 
-1. [ ] 断片マスターデータ作成
+1. [x] 断片マスターデータ作成
    - `shared/constants/fragments.ts`
    - docs/design.mdの断片例を全てデータ化
 
-2. [ ] 行動指針マスターデータ作成
+2. [x] 行動指針マスターデータ作成
    - `shared/constants/directives.ts`
    - 4場面 × 選択肢
 
-3. [ ] 取得API作成
+3. [x] 取得API作成
    - `api/features/fragment/router.ts`
    - `api/features/directive/router.ts`
 
 ### Phase 2: LLMサービス
 
-4. [ ] LLMプロバイダーインターフェース
+4. [x] LLMプロバイダーインターフェース
    - `api/src/services/llm/types.ts`
 
-5. [ ] Groqプロバイダー実装
+5. [x] Groqプロバイダー実装
    - `api/src/services/llm/providers/groq.ts`
 
-6. [ ] Geminiプロバイダー実装
+6. [x] Geminiプロバイダー実装
    - `api/src/services/llm/providers/gemini.ts`
 
-7. [ ] LLMサービス実装（フォールバック付き）
+7. [x] LLMサービス実装（フォールバック付き）
    - `api/src/services/llm/service.ts`
 
-8. [ ] プロンプトテンプレート
+8. [x] プロンプトテンプレート
    - `api/src/services/llm/prompts/biography.ts`
    - `api/src/services/llm/prompts/names.ts`
 
-9. [ ] 生成APIエンドポイント
+9. [x] 生成APIエンドポイント
    - `character.generateBiography`
    - `character.generateNames`
 
 ### Phase 3: フロントエンドウィザード
 
-10. [ ] 状態管理ストア
+10. [x] 状態管理ストア
     - `web/src/stores/characterCreation.ts`
 
-11. [ ] ウィザードコンポーネント
-    - `web/src/components/character/wizard/Wizard.tsx`
+11. [x] ウィザードコンポーネント
     - `web/src/components/character/wizard/FragmentStep.tsx`
-    - `web/src/components/character/wizard/GenerateStep.tsx`
-    - `web/src/components/character/wizard/DetailStep.tsx`
+    - `web/src/components/character/wizard/BiographyStep.tsx`
+    - `web/src/components/character/wizard/NameDirectivesStep.tsx`
     - `web/src/components/character/wizard/ConfirmStep.tsx`
 
-12. [ ] 作成ページ
-    - `web/src/routes/characters.new.tsx`
+12. [x] 作成ページ
+    - `web/src/routes/characters/new.tsx`
 
-13. [ ] ナビゲーション追加
+13. [x] ナビゲーション追加
     - ヘッダーに「キャラ作成」ボタン
 
 ### Phase 4: 統合・テスト
 
-14. [ ] 全フロー動作確認
+14. [x] 全フロー動作確認
 
-15. [ ] `pnpm lint -- --fix` 実行
+15. [x] `pnpm lint -- --fix` 実行
 
-16. [ ] `pnpm typecheck` 実行
+16. [x] `pnpm typecheck` 実行
 
 ## テスト計画
 
-- [ ] 断片選択が正しく動作する
-- [ ] AI生成が正常に完了する
-- [ ] フォールバックが機能する（プライマリ失敗時）
-- [ ] キャラクターが保存される
-- [ ] 保存後に詳細ページに遷移する
-- [ ] 未認証では作成ページにアクセスできない
+- [x] 断片選択が正しく動作する
+- [x] AI生成が正常に完了する
+- [x] フォールバックが機能する（プライマリ失敗時）
+- [x] キャラクターが保存される
+- [x] 保存後に詳細ページに遷移する
+- [x] 未認証では作成ページにアクセスできない
 
 ## 完了条件
 
-- [ ] 全ての要件が実装されている
-- [ ] `pnpm lint` がパス（警告なし）
-- [ ] `pnpm typecheck` がパス
-- [ ] キャラクター作成フロー全体が動作する
-- [ ] LLM生成が成功する
+- [x] 全ての要件が実装されている
+- [x] `pnpm lint` がパス（警告なし）
+- [x] `pnpm typecheck` がパス
+- [x] キャラクター作成フロー全体が動作する
+- [x] LLM生成が成功する
 
 ## 既存コード参照
 
@@ -374,5 +373,5 @@ pnpm --filter @ai-trpg/api add openai  # OpenRouter互換
 
 **作成日:** 2026-01-01
 **担当:** Claude
-**ステータス:** Ready
+**ステータス:** Completed
 **前提タスク:** feature-auth.md

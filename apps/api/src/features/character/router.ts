@@ -15,8 +15,11 @@ import { createCharacterId } from "@ai-trpg/shared/domain";
 import {
   createCharacterSchema,
   updateCharacterSchema,
+  generateBiographySchema,
+  generateNamesSchema,
 } from "@ai-trpg/shared/schemas";
 import type { AppError } from "@ai-trpg/shared/types";
+import { getLLMService } from "../../services/llm";
 import type { CharacterRepository } from "./repository";
 import {
   createCharacterUseCase,
@@ -243,6 +246,72 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
         }
 
         return { success: true };
+      }),
+
+    // ========================================
+    // LLM Generation Procedures (認証必須)
+    // ========================================
+
+    /**
+     * 経歴生成
+     *
+     * 断片から経歴を自動生成
+     */
+    generateBiography: protectedProcedure
+      .input(generateBiographySchema)
+      .mutation(async ({ ctx, input }) => {
+        const llmService = getLLMService(ctx.llmApiKeys);
+
+        const result = await llmService.generateBiography({
+          origin: input.fragments.origin,
+          loss: input.fragments.loss,
+          mark: input.fragments.mark,
+          sin: input.fragments.sin ?? undefined,
+          quest: input.fragments.quest ?? undefined,
+          trait: input.fragments.trait ?? undefined,
+        });
+
+        if (result.isErr()) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: result.error.message,
+          });
+        }
+
+        return { biography: result.value };
+      }),
+
+    /**
+     * 名前生成
+     *
+     * 断片と経歴から名前候補を自動生成
+     */
+    generateNames: protectedProcedure
+      .input(generateNamesSchema)
+      .mutation(async ({ ctx, input }) => {
+        const llmService = getLLMService(ctx.llmApiKeys);
+
+        const result = await llmService.generateNameSuggestions({
+          biography: input.biography,
+          fragments: {
+            origin: input.fragments.origin,
+            loss: input.fragments.loss,
+            mark: input.fragments.mark,
+            sin: input.fragments.sin ?? undefined,
+            quest: input.fragments.quest ?? undefined,
+            trait: input.fragments.trait ?? undefined,
+          },
+          count: 5,
+        });
+
+        if (result.isErr()) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: result.error.message,
+          });
+        }
+
+        return { names: result.value };
       }),
   });
 }
