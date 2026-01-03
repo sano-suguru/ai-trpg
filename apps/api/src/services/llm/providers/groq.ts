@@ -2,7 +2,11 @@
  * Groqプロバイダー
  *
  * Groq API（高速推論）を使用したLLMプロバイダー実装
- * Cloudflare AI Gateway経由でアクセス可能
+ * Cloudflare AI Gateway経由でアクセス（必須）
+ *
+ * NOTE: Cloudflare WorkersからGroq APIへの直接アクセスは
+ * Groqのセキュリティポリシーによりブロックされるため、
+ * AI Gateway経由でのアクセスが必須
  */
 
 // Cloudflare Workers環境でweb fetch APIを使用
@@ -15,6 +19,7 @@ import type {
   GenerateOptions,
   GenerateResult,
   LLMServiceError,
+  AIGatewayConfig,
 } from "../types";
 
 // ========================================
@@ -34,28 +39,9 @@ const DEFAULT_TIMEOUT = 30000;
 export interface GroqProviderConfig {
   /** Groq APIキー */
   readonly apiKey?: string;
-  /** Cloudflare AI Gateway設定（設定時はGateway経由でアクセス） */
-  readonly aiGateway?: {
-    readonly accountId: string;
-    readonly gatewayId: string;
-  };
+  /** Cloudflare AI Gateway設定（必須） */
+  readonly aiGateway: AIGatewayConfig;
 }
-
-// ========================================
-// Validation
-// ========================================
-
-/**
- * Validate AI Gateway ID format
- *
- * Allows alphanumeric characters, hyphens, and underscores only.
- * - Account ID: Typically 32-character hex string
- * - Gateway ID: User-defined slug (e.g., "my-gateway", "prod_gateway")
- *
- * Max length of 64 characters to prevent abuse.
- */
-const isValidGatewayId = (id: string): boolean =>
-  /^[a-zA-Z0-9_-]+$/.test(id) && id.length <= 64;
 
 // ========================================
 // Provider Implementation
@@ -64,28 +50,17 @@ const isValidGatewayId = (id: string): boolean =>
 /**
  * AI Gateway経由のbaseURLを生成
  *
- * 不正な設定値の場合はundefinedを返し、
- * 直接Groq APIへのアクセスにフォールバックする
+ * NOTE: AIGatewayConfigはcontext.tsで検証済みのため、ここでは信頼して使用
  */
-function buildBaseURL(
-  config: GroqProviderConfig["aiGateway"],
-): string | undefined {
-  if (!config) return undefined;
-
+function buildBaseURL(config: AIGatewayConfig): string {
   const { accountId, gatewayId } = config;
-
-  // Whitelist approach: only allow safe characters
-  if (!isValidGatewayId(accountId) || !isValidGatewayId(gatewayId)) {
-    return undefined;
-  }
-
   return `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/groq`;
 }
 
 /**
  * Groqプロバイダーを作成
  *
- * @param config プロバイダー設定（APIキーとオプションでAI Gateway設定）
+ * @param config プロバイダー設定（APIキーとAI Gateway設定）
  */
 export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
   const { apiKey, aiGateway } = config;
@@ -99,7 +74,7 @@ export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
     : null;
 
   const isAvailable = (): boolean => {
-    return !!client && !!apiKey;
+    return !!client;
   };
 
   const generate = (

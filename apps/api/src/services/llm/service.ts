@@ -63,8 +63,8 @@ export interface CreateLLMServiceOptions {
   readonly apiKeys: LLMApiKeys;
   /** サービス設定（オプション） */
   readonly config?: Partial<LLMServiceConfig>;
-  /** AI Gateway設定（オプション、設定時はGateway経由でアクセス） */
-  readonly aiGateway?: AIGatewayConfig;
+  /** Cloudflare AI Gateway設定（Groqアクセスに必須） */
+  readonly aiGateway: AIGatewayConfig;
 }
 
 /**

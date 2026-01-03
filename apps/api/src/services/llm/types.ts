@@ -167,8 +167,25 @@ export interface LLMApiKeys {
 
 /**
  * Cloudflare AI Gateway設定
+ *
+ * NOTE: Cloudflare WorkersからGroq APIへの直接アクセスは
+ * Groqのセキュリティポリシーによりブロックされるため、
+ * AI Gateway経由でのアクセスが必須
  */
 export interface AIGatewayConfig {
   readonly accountId: string;
   readonly gatewayId: string;
+}
+
+/**
+ * AI Gateway IDのフォーマット検証
+ *
+ * 英数字、ハイフン、アンダースコアのみ許可。
+ * - Account ID: 通常32文字の16進数文字列
+ * - Gateway ID: ユーザー定義のスラッグ (e.g., "my-gateway", "prod_gateway")
+ *
+ * 最大64文字で悪用を防止。
+ */
+export function isValidAIGatewayId(id: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(id) && id.length <= 64;
 }

@@ -8,7 +8,11 @@
 import type { Context as HonoContext } from "hono";
 import { UnsafeIds, type UserId } from "@ai-trpg/shared/domain";
 import type { AuthUser as SupabaseAuthUser } from "../infrastructure/supabase/client";
-import type { LLMApiKeys, AIGatewayConfig } from "../services/llm/types";
+import {
+  isValidAIGatewayId,
+  type LLMApiKeys,
+  type AIGatewayConfig,
+} from "../services/llm/types";
 
 // Re-export for convenience
 export type { LLMApiKeys, AIGatewayConfig };
@@ -34,7 +38,8 @@ export interface TRPCContext {
   readonly honoContext: HonoContext;
   readonly user: AuthUser | null;
   readonly llmApiKeys: LLMApiKeys;
-  readonly aiGateway: AIGatewayConfig | undefined;
+  /** Cloudflare AI Gateway設定（Groqアクセスに必須） */
+  readonly aiGateway: AIGatewayConfig;
   readonly [key: string]: unknown;
 }
 
@@ -93,14 +98,27 @@ export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
     openrouter: honoCtx.env.OPENROUTER_API_KEY,
   };
 
-  // AI Gateway設定を取得（両方の環境変数が設定されている場合のみ有効）
-  const aiGateway: AIGatewayConfig | undefined =
-    honoCtx.env.CF_AI_GATEWAY_ACCOUNT_ID && honoCtx.env.CF_AI_GATEWAY_ID
-      ? {
-          accountId: honoCtx.env.CF_AI_GATEWAY_ACCOUNT_ID,
-          gatewayId: honoCtx.env.CF_AI_GATEWAY_ID,
-        }
-      : undefined;
+  // AI Gateway設定を取得・検証（Groqアクセスに必須）
+  // NOTE: Cloudflare WorkersからGroq APIへの直接アクセスは
+  // Groqのセキュリティポリシーによりブロックされるため必須
+  const accountId = honoCtx.env.CF_AI_GATEWAY_ACCOUNT_ID;
+  const gatewayId = honoCtx.env.CF_AI_GATEWAY_ID;
+
+  // 必須環境変数チェック - AI GatewayはGroq APIアクセスに必須のため起動時に検証
+  // NOTE: ESLint除外はTRPCError用だが、ここでは起動時の必須条件検証として通常のErrorを使用
+  if (!accountId || !gatewayId) {
+    throw new Error(
+      "Missing required env vars: CF_AI_GATEWAY_ACCOUNT_ID and CF_AI_GATEWAY_ID are required for Groq API access",
+    );
+  }
+
+  if (!isValidAIGatewayId(accountId) || !isValidAIGatewayId(gatewayId)) {
+    throw new Error(
+      `Invalid AI Gateway config format: accountId="${accountId}", gatewayId="${gatewayId}"`,
+    );
+  }
+
+  const aiGateway: AIGatewayConfig = { accountId, gatewayId };
 
   return {
     honoContext: c,
