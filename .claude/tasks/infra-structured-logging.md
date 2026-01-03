@@ -32,11 +32,11 @@ API層に構造化ログの基盤を整備し、`console.log` / `console.error` 
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `api` | `services/logger/` | 新規ログユーティリティ作成 |
-| `api` | `services/llm/*.ts` | console.log → logger に置き換え |
-| `api` | `features/**/*.ts` | 必要に応じてログ追加 |
+| パッケージ | ファイル            | 変更内容                        |
+| ---------- | ------------------- | ------------------------------- |
+| `api`      | `services/logger/`  | 新規ログユーティリティ作成      |
+| `api`      | `services/llm/*.ts` | console.log → logger に置き換え |
+| `api`      | `features/**/*.ts`  | 必要に応じてログ追加            |
 
 ### ログユーティリティ
 
@@ -92,6 +92,47 @@ function createLogger(name: string): Logger;
   - `apps/api/src/services/llm/` - LLMサービス全般
   - `apps/api/src/features/` - Feature Slice全般
 
+## 関連: LLMサービスのエラーログ追加
+
+構造化ログ導入後、LLMサービスのフォールバック失敗時にエラー詳細をログに記録する。
+
+### 現状
+
+`apps/api/src/services/llm/service.ts` の `tryProvider` 関数内に2箇所のTODOコメントがある：
+
+1. **全プロバイダー失敗時（114-119行目付近）**: 最後のエラー詳細をログに記録する
+2. **個別プロバイダー失敗時（130-131行目付近）**: 各プロバイダーのエラー詳細をログに記録する
+
+### 改善案
+
+```typescript
+const logger = createLogger("LLMService");
+
+// 全プロバイダー失敗時
+if (index >= availableProviders.length) {
+  logger.error("All LLM providers failed", {
+    attemptedProviders: availableProviders.map(p => p.name),
+  });
+  return errAsync(Errors.llm("none", "全てのプロバイダーで失敗しました"));
+}
+
+// 個別プロバイダー失敗時
+.orElse((error) => {
+  logger.warn("LLM provider failed, trying next", {
+    provider: provider.name,
+    errorType: error.type,
+    // Note: エラーメッセージにAPIキー等が含まれる可能性があるため、
+    // 本番環境では出力レベルを調整する
+  });
+  return tryProvider(index + 1);
+});
+```
+
+### 追加タスク
+
+- [ ] `apps/api/src/services/llm/service.ts` のフォールバック失敗時ログ追加
+- [ ] 各プロバイダー失敗時の警告ログ追加
+
 ## 関連: E2Eテストのエラーハンドリング改善
 
 構造化ログ導入後、E2Eテストでもロガーを使用してデバッグ情報を出力する。
@@ -125,7 +166,10 @@ try {
   await context.storageState({ path: fileName });
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
-  logger.error("Worker authentication failed", { workerId: id, error: message });
+  logger.error("Worker authentication failed", {
+    workerId: id,
+    error: message,
+  });
   throw new Error(`Worker ${id} authentication failed: ${message}`);
 } finally {
   await context.close();

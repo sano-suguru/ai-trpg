@@ -19,6 +19,7 @@ cp .claude/tasks/TEMPLATE.md .claude/tasks/feature-xxx.md
 ### 2. 仕様を記述
 
 TEMPLATEに従って以下を記述:
+
 - 概要・背景
 - 機能要件・非機能要件
 - 設計（影響範囲、ドメインモデル、API）
@@ -39,12 +40,12 @@ TEMPLATEに従って以下を記述:
 
 ## ファイル命名規則
 
-| パターン | 用途 |
-|----------|------|
-| `feature-xxx.md` | 新機能 |
-| `fix-xxx.md` | バグ修正 |
+| パターン          | 用途             |
+| ----------------- | ---------------- |
+| `feature-xxx.md`  | 新機能           |
+| `fix-xxx.md`      | バグ修正         |
 | `refactor-xxx.md` | リファクタリング |
-| `docs-xxx.md` | ドキュメント |
+| `docs-xxx.md`     | ドキュメント     |
 
 ## 完了したタスク
 

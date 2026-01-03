@@ -17,6 +17,7 @@ ai-trpg/
 ## Apps
 
 ### apps/api (Backend)
+
 ```
 apps/api/
 ├── src/
@@ -42,6 +43,7 @@ apps/api/
 ```
 
 ### apps/web (Frontend)
+
 ```
 apps/web/
 ├── src/
@@ -81,6 +83,7 @@ apps/web/
 ## Packages
 
 ### packages/shared
+
 ```
 packages/shared/
 └── src/
@@ -97,9 +100,11 @@ packages/shared/
 ```
 
 ### packages/typescript-config
+
 Shared TypeScript configurations.
 
 ### packages/eslint-config
+
 Shared ESLint configurations with Prettier integration.
 
 ## Key Files

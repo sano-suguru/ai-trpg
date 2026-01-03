@@ -29,6 +29,8 @@ export const Route = createFileRoute("/characters/new")({
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
+      // TanStack Routerはリダイレクトにthrowが必要
+      // eslint-disable-next-line functional/no-throw-statements
       throw redirect({ to: "/login" });
     }
   },

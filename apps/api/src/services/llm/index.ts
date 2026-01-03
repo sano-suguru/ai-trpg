@@ -14,10 +14,15 @@ export type {
   LLMService,
   LLMServiceConfig,
   LLMApiKeys,
+  AIGatewayConfig,
 } from "./types";
 
 // Service
-export { createLLMService, getLLMService } from "./service";
+export {
+  createLLMService,
+  getLLMService,
+  type CreateLLMServiceOptions,
+} from "./service";
 
 // Providers
 export { createGroqProvider, createGeminiProvider } from "./providers";

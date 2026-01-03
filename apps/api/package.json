@@ -18,7 +18,9 @@
     "drizzle-kit": "drizzle-kit",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "seed": "npx tsx src/scripts/seed.ts"
+    "seed": "npx tsx src/scripts/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@ai-trpg/shared": "workspace:*",
@@ -44,6 +46,7 @@
     "eslint": "^9.39.2",
     "tsx": "^4.21.0",
     "typescript": "5.9.3",
+    "vitest": "^4.0.16",
     "wrangler": "^4.54.0"
   }
 }

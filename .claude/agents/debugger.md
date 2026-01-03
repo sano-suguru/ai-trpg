@@ -45,6 +45,7 @@ pnpm --filter @ai-trpg/web e2e 2>&1
 ### 4. 修正実装
 
 **このプロジェクトのルール:**
+
 - `try-catch` ではなく `Result<T, E>` を使用
 - `throw` ではなく `err()` を返す
 - エラーは `Errors.*` ファクトリで生成
@@ -55,18 +56,22 @@ pnpm --filter @ai-trpg/web e2e 2>&1
 ## デバッグ結果
 
 ### エラー内容
+
 - ファイル: ...
 - 行番号: ...
 - メッセージ: ...
 
 ### 根本原因
+
 ...
 
 ### 修正内容
+
 - 変更ファイル: ...
 - 変更内容: ...
 
 ### 検証結果
+
 - typecheck: Pass/Fail
 - lint: Pass/Fail
 - テスト: Pass/Fail

@@ -12,12 +12,14 @@ import { createDungeonRouter } from "../features/dungeon";
 import type { DungeonRepository } from "../features/dungeon";
 import { createFragmentRouter } from "../features/fragment";
 import { createDirectiveRouter } from "../features/directive";
+import type { Database } from "../infrastructure/database/client";
 
 // ========================================
 // Router Dependencies
 // ========================================
 
 export interface AppRouterDeps {
+  readonly db: Database;
   readonly characterRepository: CharacterRepository;
   readonly dungeonRepository: DungeonRepository;
   readonly generateId: () => string;
@@ -37,6 +39,7 @@ export function createAppRouter(deps: AppRouterDeps) {
 
   const characterRouter = createCharacterRouter({
     repository: deps.characterRepository,
+    db: deps.db,
     generateId: deps.generateId,
   });
 

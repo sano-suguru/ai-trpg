@@ -12,11 +12,13 @@ model: sonnet
 ### 1. アーキテクチャ適合性
 
 **Vertical Slice Architecture:**
+
 - Feature単位でコードが凝集しているか
 - 依存の方向は正しいか（shared <- api/web）
 - レイヤー間の責務分離は適切か
 
 **FDM（Functional Domain Modeling）:**
+
 - Branded Typesで型安全なIDを使用しているか
 - Smart Constructorが `Result<T, E>` を返しているか
 - イミュータブル（`readonly`）になっているか
@@ -31,11 +33,13 @@ model: sonnet
 ### 3. コーディング規約
 
 **命名:**
+
 - ディレクトリは `kebab-case`
 - TSファイルは `camelCase.ts`
 - Reactコンポーネントは `PascalCase.tsx`
 
 **禁止事項:**
+
 - `any` 型 → `unknown` + 型ガード
 - `console.log` → 削除
 - import文の拡張子 → 削除
@@ -64,13 +68,16 @@ model: sonnet
 ### 問題点
 
 #### [重大] ファイル:行番号
+
 - 問題: ...
 - 修正案: ...
 
 #### [警告] ファイル:行番号
+
 - 問題: ...
 - 修正案: ...
 
 ### 良かった点
+
 - ...
 ```

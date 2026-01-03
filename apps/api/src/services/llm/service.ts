@@ -15,6 +15,7 @@ import type {
   BiographyGenerationInput,
   NameGenerationInput,
   LLMApiKeys,
+  AIGatewayConfig,
 } from "./types";
 import {
   createGroqProvider,
@@ -34,9 +35,18 @@ import {
 // Default Configuration
 // ========================================
 
+/**
+ * デフォルト設定
+ *
+ * プロバイダー追加時の変更箇所:
+ * 1. types.ts - LLMProviderName に追加
+ * 2. types.ts - LLMApiKeys にキー追加
+ * 3. ここの providers 配列に追加（優先順位順）
+ * 4. createLLMService 内の providers.set() でインスタンス登録
+ */
 const DEFAULT_CONFIG: LLMServiceConfig = {
-  // OpenRouterを優先（無料モデル利用可能）、Groq/Geminiをフォールバック
-  providers: ["openrouter", "groq", "gemini"],
+  // 優先順位（左から順に試行、最初に成功したものを使用）
+  providers: ["groq", "openrouter", "gemini"],
   defaultTimeout: 30000,
   retryCount: 2,
 };
@@ -46,24 +56,44 @@ const DEFAULT_CONFIG: LLMServiceConfig = {
 // ========================================
 
 /**
+ * LLMサービス作成オプション
+ */
+export interface CreateLLMServiceOptions {
+  /** APIキー設定 */
+  readonly apiKeys: LLMApiKeys;
+  /** サービス設定（オプション） */
+  readonly config?: Partial<LLMServiceConfig>;
+  /** AI Gateway設定（オプション、設定時はGateway経由でアクセス） */
+  readonly aiGateway?: AIGatewayConfig;
+}
+
+/**
  * LLMサービスを作成
  *
- * @param apiKeys APIキー設定
- * @param config サービス設定（オプション）
+ * @param options サービス作成オプション
  */
-export function createLLMService(
-  apiKeys: LLMApiKeys,
-  config: Partial<LLMServiceConfig> = {},
-): LLMService {
+export function createLLMService(options: CreateLLMServiceOptions): LLMService {
+  const { apiKeys, config = {}, aiGateway } = options;
+
   const fullConfig: LLMServiceConfig = {
     ...DEFAULT_CONFIG,
     ...config,
   };
 
   // プロバイダーを初期化
+  // NOTE: AI GatewayはGroqのみ対応。理由:
+  // - Groqが高速推論で主力プロバイダーのため優先的に対応
+  // - Gemini/OpenRouterは各SDKのbaseURL変更サポート状況の調査が必要
+  // - 必要に応じて将来拡張可能（各プロバイダーのconfigにaiGatewayを追加）
   const providers: Map<string, LLMProvider> = new Map();
   providers.set("openrouter", createOpenRouterProvider(apiKeys.openrouter));
-  providers.set("groq", createGroqProvider(apiKeys.groq));
+  providers.set(
+    "groq",
+    createGroqProvider({
+      apiKey: apiKeys.groq,
+      aiGateway,
+    }),
+  );
   providers.set("gemini", createGeminiProvider(apiKeys.gemini));
 
   // 利用可能なプロバイダーを優先順位順に取得
@@ -91,15 +121,15 @@ export function createLLMService(
     }
 
     // プロバイダーを順番に試行
-    let lastError: LLMServiceError | null = null;
-
     const tryProvider = (
       index: number,
     ): ResultAsync<string, LLMServiceError> => {
       if (index >= availableProviders.length) {
-        return errAsync(
-          lastError ?? Errors.llm("none", "全てのプロバイダーで失敗しました"),
-        );
+        // TODO: 構造化ログ導入後、最後のエラー詳細をログに記録する
+        // See: .claude/tasks/infra-structured-logging.md
+        // セキュリティ: プロバイダー固有のエラー詳細（APIキー、内部URL等）を
+        // クライアントに露出させないため、一般的なメッセージのみ返す
+        return errAsync(Errors.llm("none", "全てのプロバイダーで失敗しました"));
       }
 
       const provider = availableProviders[index];
@@ -110,8 +140,8 @@ export function createLLMService(
           timeout: fullConfig.defaultTimeout,
         })
         .map((result) => result.text)
-        .orElse((error) => {
-          lastError = error;
+        .orElse(() => {
+          // TODO: 構造化ログ導入後、errorの詳細をログに記録する
           // 次のプロバイダーを試行
           return tryProvider(index + 1);
         });
@@ -166,8 +196,8 @@ export function createLLMService(
  * 注意: Cloudflare Workersはリクエストごとに新しいコンテキストで実行されるため、
  * 毎回新しいインスタンスを生成する
  *
- * @param apiKeys LLM APIキー設定
+ * @param options サービス作成オプション
  */
-export function getLLMService(apiKeys: LLMApiKeys): LLMService {
-  return createLLMService(apiKeys);
+export function getLLMService(options: CreateLLMServiceOptions): LLMService {
+  return createLLMService(options);
 }

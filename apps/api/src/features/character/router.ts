@@ -20,6 +20,8 @@ import {
 } from "@ai-trpg/shared/schemas";
 import type { AppError } from "@ai-trpg/shared/types";
 import { getLLMService } from "../../services/llm";
+import { withRateLimit } from "../../infrastructure/rateLimit";
+import type { Database } from "../../infrastructure/database/client";
 import type { CharacterRepository } from "./repository";
 import {
   createCharacterUseCase,
@@ -37,6 +39,7 @@ import {
 
 export interface CharacterRouterDeps {
   readonly repository: CharacterRepository;
+  readonly db: Database;
   readonly generateId: () => string;
 }
 
@@ -74,7 +77,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
      * isPublic=true かつ lending !== 'private' のキャラクターのみ
      */
     get: publicProcedure
-      .input(z.object({ id: z.string().uuid() }))
+      .input(z.object({ id: z.uuid() }))
       .query(async ({ input }) => {
         const characterIdResult = createCharacterId(input.id);
         if (characterIdResult.isErr()) {
@@ -143,7 +146,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
      * 所有者のみアクセス可能
      */
     getMine: protectedProcedure
-      .input(z.object({ id: z.string().uuid() }))
+      .input(z.object({ id: z.uuid() }))
       .query(async ({ ctx, input }) => {
         const characterIdResult = createCharacterId(input.id);
         if (characterIdResult.isErr()) {
@@ -190,7 +193,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
     update: protectedProcedure
       .input(
         z.object({
-          id: z.string().uuid(),
+          id: z.uuid(),
           data: updateCharacterSchema,
         }),
       )
@@ -223,7 +226,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
      * キャラクター削除
      */
     delete: protectedProcedure
-      .input(z.object({ id: z.string().uuid() }))
+      .input(z.object({ id: z.uuid() }))
       .mutation(async ({ ctx, input }) => {
         const characterIdResult = createCharacterId(input.id);
         if (characterIdResult.isErr()) {
@@ -260,21 +263,37 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
     generateBiography: protectedProcedure
       .input(generateBiographySchema)
       .mutation(async ({ ctx, input }) => {
-        const llmService = getLLMService(ctx.llmApiKeys);
-
-        const result = await llmService.generateBiography({
-          origin: input.fragments.origin,
-          loss: input.fragments.loss,
-          mark: input.fragments.mark,
-          sin: input.fragments.sin ?? undefined,
-          quest: input.fragments.quest ?? undefined,
-          trait: input.fragments.trait ?? undefined,
+        const llmService = getLLMService({
+          apiKeys: ctx.llmApiKeys,
+          aiGateway: ctx.aiGateway,
         });
 
+        const result = await withRateLimit(
+          deps.db,
+          ctx.user.id,
+          "generateBiography",
+          () =>
+            llmService.generateBiography({
+              origin: input.fragments.origin,
+              loss: input.fragments.loss,
+              mark: input.fragments.mark,
+              sin: input.fragments.sin ?? undefined,
+              quest: input.fragments.quest ?? undefined,
+              trait: input.fragments.trait ?? undefined,
+            }),
+        );
+
         if (result.isErr()) {
+          const error = result.error;
+          if (error.code === "RATE_LIMIT") {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: error.message,
+            });
+          }
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: result.error.message,
+            message: error.message,
           });
         }
 
@@ -289,25 +308,41 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
     generateNames: protectedProcedure
       .input(generateNamesSchema)
       .mutation(async ({ ctx, input }) => {
-        const llmService = getLLMService(ctx.llmApiKeys);
-
-        const result = await llmService.generateNameSuggestions({
-          biography: input.biography,
-          fragments: {
-            origin: input.fragments.origin,
-            loss: input.fragments.loss,
-            mark: input.fragments.mark,
-            sin: input.fragments.sin ?? undefined,
-            quest: input.fragments.quest ?? undefined,
-            trait: input.fragments.trait ?? undefined,
-          },
-          count: 5,
+        const llmService = getLLMService({
+          apiKeys: ctx.llmApiKeys,
+          aiGateway: ctx.aiGateway,
         });
 
+        const result = await withRateLimit(
+          deps.db,
+          ctx.user.id,
+          "generateNames",
+          () =>
+            llmService.generateNameSuggestions({
+              biography: input.biography,
+              fragments: {
+                origin: input.fragments.origin,
+                loss: input.fragments.loss,
+                mark: input.fragments.mark,
+                sin: input.fragments.sin ?? undefined,
+                quest: input.fragments.quest ?? undefined,
+                trait: input.fragments.trait ?? undefined,
+              },
+              count: 5,
+            }),
+        );
+
         if (result.isErr()) {
+          const error = result.error;
+          if (error.code === "RATE_LIMIT") {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: error.message,
+            });
+          }
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: result.error.message,
+            message: error.message,
           });
         }
 

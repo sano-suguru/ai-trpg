@@ -31,18 +31,18 @@ Supabase Authを使用した認証基盤を構築し、ユーザーが自分の�
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `shared` | `domain/primitives/ids.ts` | UserId型（既存） |
-| `api` | `src/index.ts` | Supabaseクライアント初期化 |
-| `api` | `src/trpc/context.ts` | JWT検証、ユーザー取得 |
-| `api` | `src/infrastructure/supabase/` | Supabaseクライアント |
-| `api` | `wrangler.jsonc` | 環境変数追加 |
-| `web` | `src/lib/supabase.ts` | Supabaseクライアント |
-| `web` | `src/lib/auth.ts` | 認証ユーティリティ |
-| `web` | `src/components/layout/Header.tsx` | ログイン/ログアウトボタン |
-| `web` | `src/routes/login.tsx` | ログインページ |
-| `web` | `src/main.tsx` | Supabaseプロバイダー設定 |
+| パッケージ | ファイル                           | 変更内容                   |
+| ---------- | ---------------------------------- | -------------------------- |
+| `shared`   | `domain/primitives/ids.ts`         | UserId型（既存）           |
+| `api`      | `src/index.ts`                     | Supabaseクライアント初期化 |
+| `api`      | `src/trpc/context.ts`              | JWT検証、ユーザー取得      |
+| `api`      | `src/infrastructure/supabase/`     | Supabaseクライアント       |
+| `api`      | `wrangler.jsonc`                   | 環境変数追加               |
+| `web`      | `src/lib/supabase.ts`              | Supabaseクライアント       |
+| `web`      | `src/lib/auth.ts`                  | 認証ユーティリティ         |
+| `web`      | `src/components/layout/Header.tsx` | ログイン/ログアウトボタン  |
+| `web`      | `src/routes/login.tsx`             | ログインページ             |
+| `web`      | `src/main.tsx`                     | Supabaseプロバイダー設定   |
 
 ### 認証フロー
 
@@ -68,10 +68,10 @@ Supabase Authを使用した認証基盤を構築し、ユーザーが自分の�
 
 ### API
 
-| エンドポイント | メソッド | 認証 | 説明 |
-|---------------|----------|------|------|
-| `auth.getSession` | Query | 不要 | 現在のセッション取得 |
-| `auth.signOut` | Mutation | 要 | ログアウト |
+| エンドポイント    | メソッド | 認証 | 説明                 |
+| ----------------- | -------- | ---- | -------------------- |
+| `auth.getSession` | Query    | 不要 | 現在のセッション取得 |
+| `auth.signOut`    | Mutation | 要   | ログアウト           |
 
 Note: ログイン自体はSupabase Auth UIまたはクライアントSDKで処理
 
@@ -177,6 +177,7 @@ VITE_SUPABASE_ANON_KEY=eyJxxx...
 ### tRPCコンテキスト（現状）
 
 `apps/api/src/trpc/context.ts`:
+
 ```typescript
 // AuthUser インターフェースは定義済み
 export interface AuthUser {
@@ -188,12 +189,14 @@ export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
   // TODO: 認証情報をHonoコンテキストから取得
   return {
     honoContext: c,
-    user: null,  // ← ここを実装する
+    user: null, // ← ここを実装する
   };
 }
 
 // 型ガードも定義済み
-export function isAuthenticated(ctx: TRPCContext): ctx is AuthenticatedTRPCContext {
+export function isAuthenticated(
+  ctx: TRPCContext,
+): ctx is AuthenticatedTRPCContext {
   return ctx.user !== null;
 }
 ```
@@ -201,6 +204,7 @@ export function isAuthenticated(ctx: TRPCContext): ctx is AuthenticatedTRPCConte
 ### protectedProcedure（現状）
 
 `apps/api/src/trpc/index.ts`:
+
 ```typescript
 // 実装済みだが、ctx.user が常に null のため機能していない
 export const protectedProcedure = t.procedure.use(async (opts) => {
@@ -222,13 +226,17 @@ export const protectedProcedure = t.procedure.use(async (opts) => {
 ### Honoエントリーポイント
 
 `apps/api/src/index.ts`:
+
 ```typescript
 // CORS設定は既にあり、Authorization ヘッダーを追加する必要あり
-app.use("*", cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-  allowMethods: ["GET", "POST", "OPTIONS"],
-  allowHeaders: ["Content-Type"],  // ← Authorization を追加
-}));
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type"], // ← Authorization を追加
+  }),
+);
 
 // 環境変数の型定義を拡張
 interface Env {
@@ -240,12 +248,10 @@ interface Env {
 ### エラーハンドリングパターン
 
 `packages/shared/src/lib/result.ts`:
+
 ```typescript
 // 外部API呼び出しは wrapExternalCall() でラップ
-const result = await wrapExternalCall(
-  supabase.auth.getUser(token),
-  'Supabase'
-);
+const result = await wrapExternalCall(supabase.auth.getUser(token), "Supabase");
 
 // Result<T, E> を返し、エラーは Errors.* ファクトリで生成
 if (result.isErr()) {
@@ -256,6 +262,7 @@ if (result.isErr()) {
 ### 既存エラー型
 
 `packages/shared/src/types/errors.ts`:
+
 ```typescript
 // 認証関連エラーは既に定義済み
 export interface UnauthorizedError extends BaseError {
@@ -267,8 +274,8 @@ export interface SessionExpiredError extends BaseError {
 }
 
 // ファクトリ関数
-Errors.unauthorized("認証が必要です")
-Errors.sessionExpired("セッションが期限切れです")
+Errors.unauthorized("認証が必要です");
+Errors.sessionExpired("セッションが期限切れです");
 ```
 
 ## 参考

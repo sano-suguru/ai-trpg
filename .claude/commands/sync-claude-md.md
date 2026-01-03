@@ -16,12 +16,14 @@ The goal is **accuracy**, not compression. CLAUDE.md should reflect the current 
 ## Guidelines
 
 **DO:**
+
 - Remove information about files/directories that no longer exist
 - Update paths and names that have changed
 - Add genuinely useful new conventions or patterns discovered
 - Consolidate duplicate information into single entries
 
 **DON'T:**
+
 - Remove useful information just to save tokens
 - Compress clear explanations into cryptic abbreviations
 - Delete context that helps Claude understand the project

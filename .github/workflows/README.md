@@ -12,10 +12,10 @@ PRとmainブランチへのプッシュ時に実行される。
 
 #### ジョブ構成
 
-| ジョブ | トリガー | 内容 |
-|--------|----------|------|
+| ジョブ               | トリガー | 内容                          |
+| -------------------- | -------- | ----------------------------- |
 | `lint-and-typecheck` | PR, push | ESLint + TypeScript型チェック |
-| `e2e` | PR, push | Playwright E2Eテスト |
+| `e2e`                | PR, push | Playwright E2Eテスト          |
 
 #### E2Eテストの実行フロー
 
@@ -32,14 +32,14 @@ graph TD
     H -->|No| J[Upload report + videos]
 ```
 
-| ステップ | 内容 |
-|----------|------|
-| Install dependencies | Node.js 20 + pnpm 9 |
-| Install Playwright | chromiumブラウザのみ（高速化） |
-| Start Supabase | 不要サービス除外で高速起動 |
-| Create .dev.vars | `supabase status`から認証情報取得 |
-| Seed test data | シードキャラクター・ダンジョン投入 |
-| Run E2E tests | `pnpm dev`でweb+api起動後テスト実行 |
+| ステップ             | 内容                                |
+| -------------------- | ----------------------------------- |
+| Install dependencies | Node.js 20 + pnpm 9                 |
+| Install Playwright   | chromiumブラウザのみ（高速化）      |
+| Start Supabase       | 不要サービス除外で高速起動          |
+| Create .dev.vars     | `supabase status`から認証情報取得   |
+| Seed test data       | シードキャラクター・ダンジョン投入  |
+| Run E2E tests        | `pnpm dev`でweb+api起動後テスト実行 |
 
 ## ローカルでのCI再現
 
@@ -59,6 +59,7 @@ pnpm --filter @ai-trpg/web e2e
 現在、シークレット設定は不要（Supabase Localを使用）。
 
 本番デプロイを追加する場合は以下が必要：
+
 - `CLOUDFLARE_API_TOKEN` - Cloudflare Workers デプロイ用
 - `SUPABASE_ACCESS_TOKEN` - Supabase プロジェクト操作用
 

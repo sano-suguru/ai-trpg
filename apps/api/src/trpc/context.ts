@@ -8,10 +8,10 @@
 import type { Context as HonoContext } from "hono";
 import { UnsafeIds, type UserId } from "@ai-trpg/shared/domain";
 import type { AuthUser as SupabaseAuthUser } from "../infrastructure/supabase/client";
-import type { LLMApiKeys } from "../services/llm/types";
+import type { LLMApiKeys, AIGatewayConfig } from "../services/llm/types";
 
 // Re-export for convenience
-export type { LLMApiKeys };
+export type { LLMApiKeys, AIGatewayConfig };
 
 // ========================================
 // Context Types
@@ -34,6 +34,7 @@ export interface TRPCContext {
   readonly honoContext: HonoContext;
   readonly user: AuthUser | null;
   readonly llmApiKeys: LLMApiKeys;
+  readonly aiGateway: AIGatewayConfig | undefined;
   readonly [key: string]: unknown;
 }
 
@@ -55,6 +56,8 @@ interface Env {
   GROQ_API_KEY?: string;
   GEMINI_API_KEY?: string;
   OPENROUTER_API_KEY?: string;
+  CF_AI_GATEWAY_ACCOUNT_ID?: string;
+  CF_AI_GATEWAY_ID?: string;
 }
 
 /**
@@ -90,10 +93,20 @@ export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
     openrouter: honoCtx.env.OPENROUTER_API_KEY,
   };
 
+  // AI Gateway設定を取得（両方の環境変数が設定されている場合のみ有効）
+  const aiGateway: AIGatewayConfig | undefined =
+    honoCtx.env.CF_AI_GATEWAY_ACCOUNT_ID && honoCtx.env.CF_AI_GATEWAY_ID
+      ? {
+          accountId: honoCtx.env.CF_AI_GATEWAY_ACCOUNT_ID,
+          gatewayId: honoCtx.env.CF_AI_GATEWAY_ID,
+        }
+      : undefined;
+
   return {
     honoContext: c,
     user,
     llmApiKeys,
+    aiGateway,
   };
 }
 

@@ -17,13 +17,16 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@ai-trpg/eslint-config": "workspace:*",
     "@ai-trpg/typescript-config": "workspace:*",
     "eslint": "^9.39.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "neverthrow": "^8.2.0",

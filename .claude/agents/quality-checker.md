@@ -38,20 +38,24 @@ pnpm --filter @ai-trpg/web e2e
 ## 品質チェック結果
 
 ### サマリー
-| チェック | 結果 | エラー数 | 警告数 |
-|----------|------|----------|--------|
-| typecheck | Pass/Fail | X | X |
-| lint | Pass/Fail | X | X |
-| E2E | Pass/Fail | X | - |
+
+| チェック  | 結果      | エラー数 | 警告数 |
+| --------- | --------- | -------- | ------ |
+| typecheck | Pass/Fail | X        | X      |
+| lint      | Pass/Fail | X        | X      |
+| E2E       | Pass/Fail | X        | -      |
 
 ### エラー一覧
 
 #### typecheck
+
 - ファイル:行 - エラー内容
 
 #### lint
+
 - ファイル:行 - エラー内容
 
 ### 次のアクション
+
 - [ ] ...
 ```

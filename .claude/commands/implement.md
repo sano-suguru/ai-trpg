@@ -13,6 +13,7 @@ $ARGUMENTS - タスク仕様ファイルのパス（例: `.claude/tasks/feature-
 ### 1. コンテキスト収集
 
 **必須で読み込むファイル:**
+
 - 指定されたタスク仕様ファイル
 - 関連するモジュールのREADME.md（`apps/{app}/README.md`, `packages/{pkg}/README.md`）
 - [CLAUDE.md](../../CLAUDE.md) - プロジェクト全体のルール
@@ -20,12 +21,14 @@ $ARGUMENTS - タスク仕様ファイルのパス（例: `.claude/tasks/feature-
 - 関連するドメインの既存コード
 
 **変更対象の確認:**
+
 - 影響を受けるファイルをリストアップ
 - 依存関係を確認（shared → api/web の依存方向を遵守）
 
 ### 2. 設計確認
 
 **Vertical Slice Architecture に従う:**
+
 - ドメインモデル → `packages/shared/src/domain/{entity}/`
 - ドメインプリミティブ（ID型） → `packages/shared/src/domain/primitives/`
 - Zodスキーマ → `packages/shared/src/schemas/`
@@ -36,6 +39,7 @@ $ARGUMENTS - タスク仕様ファイルのパス（例: `.claude/tasks/feature-
   - `useCases/` - 各ユースケース
 
 **FDM（Functional Domain Modeling）に従う:**
+
 - Branded Types で型安全なID
 - Smart Constructors が `Result<T, E>` を返す
 - 全て `readonly` でイミュータブル
@@ -43,11 +47,13 @@ $ARGUMENTS - タスク仕様ファイルのパス（例: `.claude/tasks/feature-
 ### 3. 実装
 
 **エラーハンドリング:**
+
 - `Result<T, E>` / `ResultAsync<T, E>` を使用
 - `try-catch` は使わない
 - `Errors.*` ファクトリで一貫したエラー生成
 
 **コーディング規約:**
+
 - import文に拡張子を書かない
 - 深い相対パス禁止（`@/` エイリアス使用）
 - `any` 禁止 → `unknown` + 型ガード
@@ -83,11 +89,13 @@ pnpm --filter @ai-trpg/web e2e
 ```
 
 **テスト作成ルール:**
+
 - `goto("/")` から開始し、実際のユーザー操作をシミュレート
 - モック実装は禁止 - 実際のUI操作で動作を確認
 - スクリーンショットと動画が `apps/web/e2e-results/` に自動保存される
 
 **禁止事項（これらはテスト失敗と同等に扱う）:**
+
 - `goto()` で直接ページ遷移する紙芝居的テスト
 - ハードコードされた認証コード・テストデータ
 - DBに保存されたように見せかけて実際は保存されていない実装
