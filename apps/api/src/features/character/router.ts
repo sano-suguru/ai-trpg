@@ -266,6 +266,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
         const llmService = getLLMService({
           apiKeys: ctx.llmApiKeys,
           aiGateway: ctx.aiGateway,
+          useMockLLM: ctx.useMockLLM,
         });
 
         const result = await withRateLimit(
@@ -311,6 +312,7 @@ export function createCharacterRouter(deps: CharacterRouterDeps) {
         const llmService = getLLMService({
           apiKeys: ctx.llmApiKeys,
           aiGateway: ctx.aiGateway,
+          useMockLLM: ctx.useMockLLM,
         });
 
         const result = await withRateLimit(

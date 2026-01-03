@@ -42,22 +42,40 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
       // 認証ディレクトリを作成
       fs.mkdirSync(path.dirname(fileName), { recursive: true });
 
-      // 新しいコンテキストで認証（storageState なし）
-      const context = await browser.newContext();
-      const page = await context.newPage();
+      // 認証をリトライ付きで実行（並列実行時のMailpit競合対策）
+      const maxRetries = 3;
+      let lastError: Error | null = null;
 
-      try {
-        await authenticateWithMagicLink(browser, page, id);
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const context = await browser.newContext();
+        const page = await context.newPage();
 
-        // storageState を保存
-        await context.storageState({ path: fileName });
-      } finally {
-        await context.close();
+        try {
+          // リトライ時はワーカーごとに異なるディレイを追加
+          if (attempt > 0) {
+            await page.waitForTimeout(id * 2000 + attempt * 3000);
+          }
+
+          await authenticateWithMagicLink(browser, page, id, attempt);
+
+          // storageState を保存
+          await context.storageState({ path: fileName });
+          await context.close();
+          await use(fileName);
+          return;
+        } catch (error) {
+          lastError = error as Error;
+          await context.close();
+          // リトライ前に少し待機
+          if (attempt < maxRetries - 1) {
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+        }
       }
 
-      await use(fileName);
+      throw lastError ?? new Error("Authentication failed after retries");
     },
-    { scope: "worker", timeout: 60000 },
+    { scope: "worker", timeout: 120000 },
   ],
 });
 
@@ -68,13 +86,14 @@ async function authenticateWithMagicLink(
   browser: Browser,
   page: Page,
   workerId: number,
+  attempt: number = 0,
 ) {
   // Worker fixture のページは baseURL が設定されていないため絶対URLを使用
   const baseURL = "http://localhost:5173";
   await page.goto(`${baseURL}/login`);
 
-  // Worker ごとにユニークなメールアドレス
-  const email = `test-worker${workerId}-${Date.now()}@example.com`;
+  // Worker ごと・リトライごとにユニークなメールアドレス
+  const email = `test-worker${workerId}-attempt${attempt}-${Date.now()}@example.com`;
   await page.getByRole("textbox", { name: "メールアドレス" }).fill(email);
   await page.getByRole("button", { name: "Magic Linkを送信" }).click();
 
@@ -96,7 +115,7 @@ async function authenticateWithMagicLink(
         name: new RegExp(`To: ${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
       });
 
-      if (await emailLink.isVisible({ timeout: 3000 }).catch(() => false)) {
+      if (await emailLink.isVisible({ timeout: 5000 }).catch(() => false)) {
         await emailLink.click();
 
         const previewFrame = mailpitPage
@@ -104,7 +123,7 @@ async function authenticateWithMagicLink(
           .contentFrame();
         await previewFrame
           .getByRole("link", { name: "Log In" })
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: 10000 });
         href = await previewFrame
           .getByRole("link", { name: "Log In" })
           .getAttribute("href");
@@ -144,25 +163,30 @@ async function authenticateWithMagicLink(
  *       選択肢が表示されるまで待機する必要がある
  */
 async function selectRequiredFragments(page: Page): Promise<void> {
+  // データ読み込み完了を待つ（「読み込み中...」が消えるまで）
+  await expect(page.getByText("読み込み中...").first()).not.toBeVisible({
+    timeout: 30000,
+  });
+
   // 出自: データ読み込み完了を待ってから選択
   const originButton = page.getByRole("button", {
     name: /灰燼の街の生き残り.*大火で滅んだ/,
   });
-  await originButton.waitFor({ state: "visible", timeout: 10000 });
+  await originButton.waitFor({ state: "visible", timeout: 15000 });
   await originButton.click();
 
   // 喪失: データ読み込み完了を待ってから選択
   const lossButton = page.getByRole("button", {
     name: /故郷はもう地図にない.*帰る場所そのものが/,
   });
-  await lossButton.waitFor({ state: "visible", timeout: 10000 });
+  await lossButton.waitFor({ state: "visible", timeout: 15000 });
   await lossButton.click();
 
   // 刻印: データ読み込み完了を待ってから選択
   const markButton = page.getByRole("button", {
     name: /白髪（若くして）.*何かを見た/,
   });
-  await markButton.waitFor({ state: "visible", timeout: 10000 });
+  await markButton.waitFor({ state: "visible", timeout: 15000 });
   await markButton.click();
 }
 
@@ -346,5 +370,77 @@ test.describe("キャラクター作成ウィザード", () => {
 
     // 次へボタンが無効に戻っていることを確認
     await expect(nextButton).toBeDisabled({ timeout: 5000 });
+  });
+
+  test("LLM経歴生成が動作する", async ({ page }) => {
+    await page.goto("/characters/new");
+
+    // 断片選択して次へ
+    await selectRequiredFragments(page);
+    await page.getByRole("button", { name: "次へ：経歴を生成" }).click();
+
+    // 経歴生成画面に遷移
+    await expect(
+      page.getByRole("heading", { name: "経歴を生成" }),
+    ).toBeVisible();
+
+    // 自動生成が開始されることを確認（ローディング表示）
+    // 注意: 生成が速すぎると見えない場合があるため、テキストエリアまたはローディングを待つ
+    const biographyTextarea = page.getByRole("textbox", { name: "経歴" });
+    await biographyTextarea.waitFor({ state: "visible", timeout: 15000 });
+
+    // モックLLMのレスポンスが表示されることを確認
+    // mock.ts の MOCK_RESPONSES.biography の一部を検証
+    await expect(biographyTextarea).toHaveValue(/灰の時代に生まれ/, {
+      timeout: 15000,
+    });
+    await expect(biographyTextarea).toHaveValue(/故郷が一夜にして炎に包まれる/);
+  });
+
+  test("LLM名前候補生成が動作する", async ({ page }) => {
+    await page.goto("/characters/new");
+
+    // 断片選択 → 経歴生成
+    await selectRequiredFragments(page);
+    await page.getByRole("button", { name: "次へ：経歴を生成" }).click();
+
+    // 経歴生成完了を待つ
+    const biographyTextarea = page.getByRole("textbox", { name: "経歴" });
+    await biographyTextarea.waitFor({ state: "visible", timeout: 15000 });
+    await expect(biographyTextarea).toHaveValue(/灰の時代に生まれ/, {
+      timeout: 15000,
+    });
+
+    // 次へ進む
+    await page.getByRole("button", { name: "次へ：名前と行動指針" }).click();
+
+    // 名前・行動指針画面に遷移
+    await expect(
+      page.getByRole("heading", { name: "名前と行動指針" }),
+    ).toBeVisible();
+
+    // 名前候補の生成完了を待つ（モックLLMのレスポンスがパースされてボタン表示）
+    // mock.ts の MOCK_RESPONSES.names: "1. 灰燼のセド\n2. 忘却のリラ\n3. 灰色のヴォルク"
+    // フロントエンドで「タイトルの名前」形式にパースされ、「タイトルの + 名前」と表示される
+    const sedButton = page.getByRole("button", { name: /灰燼.*セド/ });
+    await sedButton.waitFor({ state: "visible", timeout: 15000 });
+
+    // 他の候補も表示されることを確認
+    await expect(
+      page.getByRole("button", { name: /忘却.*リラ/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /灰色.*ヴォルク/ }),
+    ).toBeVisible();
+
+    // 候補をクリックして名前入力欄に入力されることを確認
+    await sedButton.click();
+    await expect(page.getByRole("textbox", { name: "名前*" })).toHaveValue(
+      "セド",
+    );
+    // タイトル入力欄も確認
+    await expect(
+      page.getByRole("textbox", { name: "二つ名/通り名（任意）" }),
+    ).toHaveValue("灰燼");
   });
 });

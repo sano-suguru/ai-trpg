@@ -38,8 +38,10 @@ export interface TRPCContext {
   readonly honoContext: HonoContext;
   readonly user: AuthUser | null;
   readonly llmApiKeys: LLMApiKeys;
-  /** Cloudflare AI Gateway設定（Groqアクセスに必須） */
+  /** Cloudflare AI Gateway設定（Groqアクセスに必須、モックモード時はダミー値） */
   readonly aiGateway: AIGatewayConfig;
+  /** E2Eテスト用: LLMモックを使用するか */
+  readonly useMockLLM: boolean;
   readonly [key: string]: unknown;
 }
 
@@ -63,6 +65,8 @@ interface Env {
   OPENROUTER_API_KEY?: string;
   CF_AI_GATEWAY_ACCOUNT_ID?: string;
   CF_AI_GATEWAY_ID?: string;
+  /** E2Eテスト用: LLMモックを使用するか */
+  USE_MOCK_LLM?: string;
 }
 
 /**
@@ -98,33 +102,45 @@ export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
     openrouter: honoCtx.env.OPENROUTER_API_KEY,
   };
 
+  // E2Eテスト用モックモード判定
+  const useMockLLM = honoCtx.env.USE_MOCK_LLM === "true";
+
   // AI Gateway設定を取得・検証（Groqアクセスに必須）
   // NOTE: Cloudflare WorkersからGroq APIへの直接アクセスは
   // Groqのセキュリティポリシーによりブロックされるため必須
+  // ただしモックモード時は実際のAPIを呼ばないためスキップ
   const accountId = honoCtx.env.CF_AI_GATEWAY_ACCOUNT_ID;
   const gatewayId = honoCtx.env.CF_AI_GATEWAY_ID;
 
-  // 必須環境変数チェック - AI GatewayはGroq APIアクセスに必須のため起動時に検証
-  // NOTE: ESLint除外はTRPCError用だが、ここでは起動時の必須条件検証として通常のErrorを使用
-  if (!accountId || !gatewayId) {
-    throw new Error(
-      "Missing required env vars: CF_AI_GATEWAY_ACCOUNT_ID and CF_AI_GATEWAY_ID are required for Groq API access",
-    );
-  }
+  let aiGateway: AIGatewayConfig;
 
-  if (!isValidAIGatewayId(accountId) || !isValidAIGatewayId(gatewayId)) {
-    throw new Error(
-      `Invalid AI Gateway config format: accountId="${accountId}", gatewayId="${gatewayId}"`,
-    );
-  }
+  if (useMockLLM) {
+    // モックモード: ダミー値を使用（実際には使用されない）
+    aiGateway = { accountId: "mock-account", gatewayId: "mock-gateway" };
+  } else {
+    // 本番モード: 必須環境変数チェック
+    // NOTE: ここでは起動時の必須条件検証として通常のErrorを使用
+    if (!accountId || !gatewayId) {
+      throw new Error(
+        "Missing required env vars: CF_AI_GATEWAY_ACCOUNT_ID and CF_AI_GATEWAY_ID are required for Groq API access",
+      );
+    }
 
-  const aiGateway: AIGatewayConfig = { accountId, gatewayId };
+    if (!isValidAIGatewayId(accountId) || !isValidAIGatewayId(gatewayId)) {
+      throw new Error(
+        `Invalid AI Gateway config format: accountId="${accountId}", gatewayId="${gatewayId}"`,
+      );
+    }
+
+    aiGateway = { accountId, gatewayId };
+  }
 
   return {
     honoContext: c,
     user,
     llmApiKeys,
     aiGateway,
+    useMockLLM,
   };
 }
 

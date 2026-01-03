@@ -14,7 +14,12 @@ import type { LLMError, LLMRateLimitError } from "@ai-trpg/shared/types";
 /**
  * サポートするLLMプロバイダー
  */
-export type LLMProviderName = "groq" | "gemini" | "github" | "openrouter";
+export type LLMProviderName =
+  | "groq"
+  | "gemini"
+  | "github"
+  | "openrouter"
+  | "mock";
 
 /**
  * 生成オプション
