@@ -36,9 +36,16 @@ apps/api/
 │   │       ├── prompts/   # Prompt templates (biography, names)
 │   │       ├── service.ts # LLM service with fallback
 │   │       └── types.ts   # LLM types and interfaces
+│   ├── services/          # Shared services
+│   │   └── llm/           # LLM service layer
+│   │       ├── providers/ # LLM providers (Groq, Gemini, OpenRouter)
+│   │       ├── prompts/   # Prompt templates (biography, names)
+│   │       ├── service.ts # LLM service with fallback
+│   │       └── types.ts   # LLM types and interfaces
 │   └── infrastructure/
-│       └── database/
-│           └── schema/    # Drizzle ORM schemas
+│       ├── database/
+│       │   └── schema/    # Drizzle ORM schemas (incl. llmUsageLogs)
+│       └── rateLimit/     # LLM rate limiting (user/IP based)
 └── wrangler.toml          # Cloudflare Workers config
 ```
 

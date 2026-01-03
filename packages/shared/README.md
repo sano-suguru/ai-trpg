@@ -110,6 +110,14 @@ function findUser(id: UserId): Result<User, AppError> {
 | `UnauthorizedError` | 認証エラー             |
 | `ForbiddenError`    | 権限エラー             |
 
+## コマンド
+
+```bash
+pnpm typecheck  # 型チェック
+pnpm lint       # lint
+pnpm test       # ユニットテスト（vitest）
+```
+
 ## 依存関係
 
 - 外部パッケージ以外に依存しない

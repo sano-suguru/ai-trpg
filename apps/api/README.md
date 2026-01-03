@@ -9,7 +9,11 @@ src/
 ├── features/              # Vertical Slice（機能単位）
 │   ├── character/         # キャラクター機能
 │   └── dungeon/           # ダンジョン機能
-├── infrastructure/        # インフラ層（DB、外部サービス）
+├── services/              # 共有サービス
+│   └── llm/               # LLMサービス（プロバイダー抽象化）
+├── infrastructure/        # インフラ層
+│   ├── database/schema/   # Drizzle ORMスキーマ
+│   └── rateLimit/         # レートリミット（ユーザー/IP単位）
 ├── trpc/                  # tRPC設定
 └── index.ts               # エントリーポイント
 ```
@@ -47,6 +51,7 @@ pnpm dev        # 開発サーバー起動
 pnpm typecheck  # 型チェック
 pnpm lint       # lint
 pnpm build      # ビルド
+pnpm test       # ユニットテスト（vitest）
 pnpm deploy     # デプロイ
 ```
 

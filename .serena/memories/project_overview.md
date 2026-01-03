@@ -34,6 +34,8 @@ AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG 
 
 - Multi-provider: Gemini, Groq, GitHub Models
 - Abstraction layer with fallback strategy
+- Rate limiting (user/IP based)
+- Usage logging to database
 
 ## Monorepo Structure
 
