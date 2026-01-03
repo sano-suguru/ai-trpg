@@ -7,6 +7,7 @@
 
 import { ResultAsync, errAsync, okAsync } from "neverthrow";
 import { Errors } from "@ai-trpg/shared/types";
+import { createLogger } from "../logger";
 import type {
   LLMProvider,
   LLMService,
@@ -50,6 +51,8 @@ const DEFAULT_CONFIG: LLMServiceConfig = {
   defaultTimeout: 30000,
   retryCount: 2,
 };
+
+const logger = createLogger("LLMService");
 
 // ========================================
 // Service Factory
@@ -102,6 +105,11 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
       .map((name) => providers.get(name))
       .filter((p): p is LLMProvider => p !== undefined && p.isAvailable());
 
+    logger.debug("Available providers", {
+      configured: fullConfig.providers,
+      available: available.map((p) => p.name),
+    });
+
     return available;
   };
 
@@ -115,6 +123,9 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
     const availableProviders = getAvailableProviders();
 
     if (availableProviders.length === 0) {
+      logger.error("No available providers", {
+        configured: fullConfig.providers,
+      });
       return errAsync(
         Errors.llm("none", "利用可能なLLMプロバイダーがありません"),
       );
@@ -125,8 +136,10 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
       index: number,
     ): ResultAsync<string, LLMServiceError> => {
       if (index >= availableProviders.length) {
-        // TODO: 構造化ログ導入後、最後のエラー詳細をログに記録する
-        // See: .claude/tasks/infra-structured-logging.md
+        logger.error("All providers failed", {
+          attemptedProviders: availableProviders.map((p) => p.name),
+          promptLength: prompt.length,
+        });
         // セキュリティ: プロバイダー固有のエラー詳細（APIキー、内部URL等）を
         // クライアントに露出させないため、一般的なメッセージのみ返す
         return errAsync(Errors.llm("none", "全てのプロバイダーで失敗しました"));
@@ -134,14 +147,32 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
 
       const provider = availableProviders[index];
 
+      logger.debug("Trying provider", {
+        provider: provider.name,
+        attempt: index + 1,
+        total: availableProviders.length,
+      });
+
       return provider
         .generate(prompt, {
           systemPrompt,
           timeout: fullConfig.defaultTimeout,
         })
-        .map((result) => result.text)
-        .orElse(() => {
-          // TODO: 構造化ログ導入後、errorの詳細をログに記録する
+        .map((result) => {
+          logger.info("Generation succeeded", {
+            provider: provider.name,
+            promptTokens: result.tokens?.prompt,
+            completionTokens: result.tokens?.completion,
+            totalTokens: result.tokens?.total,
+          });
+          return result.text;
+        })
+        .orElse((error) => {
+          logger.warn("Provider failed, trying next", {
+            provider: provider.name,
+            errorCode: error.code,
+            remaining: availableProviders.length - index - 1,
+          });
           // 次のプロバイダーを試行
           return tryProvider(index + 1);
         });

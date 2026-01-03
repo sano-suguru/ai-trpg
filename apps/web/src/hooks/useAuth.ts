@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Session, User, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { logger } from "@/lib/logger";
 
 // ========================================
 // Types
@@ -58,27 +59,40 @@ export function useAuth(): UseAuthReturn {
 
   // 初期セッション取得と認証状態変更の監視
   useEffect(() => {
+    logger.debug("Auth: Initializing session");
+
     // 現在のセッションを取得
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setIsLoading(false);
+      logger.info("Auth: Session initialized", {
+        hasSession: !!currentSession,
+        userId: currentSession?.user?.id,
+      });
     });
 
     // 認証状態変更をリッスン
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      logger.info("Auth: State changed", {
+        event,
+        hasSession: !!newSession,
+        userId: newSession?.user?.id,
+      });
       setSession(newSession);
     });
 
     // クリーンアップ
     return () => {
+      logger.debug("Auth: Cleaning up subscription");
       subscription.unsubscribe();
     };
   }, []);
 
   // Magic Linkでサインイン
   const signInWithMagicLink = useCallback(async (email: string) => {
+    logger.info("Auth: Signing in with Magic Link", { email });
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -86,12 +100,29 @@ export function useAuth(): UseAuthReturn {
         emailRedirectTo: window.location.origin,
       },
     });
+    if (error) {
+      logger.error("Auth: Magic Link sign in failed", {
+        error: error.message,
+        code: error.code,
+      });
+    } else {
+      logger.info("Auth: Magic Link sent successfully", { email });
+    }
     return { error };
   }, []);
 
   // サインアウト
   const signOut = useCallback(async () => {
+    logger.info("Auth: Signing out");
     const { error } = await supabase.auth.signOut();
+    if (error) {
+      logger.error("Auth: Sign out failed", {
+        error: error.message,
+        code: error.code,
+      });
+    } else {
+      logger.info("Auth: Signed out successfully");
+    }
     return { error };
   }, []);
 

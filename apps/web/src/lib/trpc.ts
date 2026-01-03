@@ -4,7 +4,7 @@
  * APIサーバーとの型安全な通信を提供
  */
 
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import superjson from "superjson";
 import type { AppRouter } from "@ai-trpg/api/trpc";
@@ -47,6 +47,12 @@ export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 export function createTrpcClient() {
   return createTRPCClient<AppRouter>({
     links: [
+      // 開発時はすべてのオペレーションをログ出力、本番はエラーのみ
+      loggerLink({
+        enabled: (opts) =>
+          import.meta.env.DEV ||
+          (opts.direction === "down" && opts.result instanceof Error),
+      }),
       httpBatchLink({
         url: `${getApiUrl()}/trpc`,
         transformer: superjson,

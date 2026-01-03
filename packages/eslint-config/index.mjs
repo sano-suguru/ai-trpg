@@ -2,7 +2,9 @@
  * 共有ESLint設定（Flat Config形式）
  *
  * ESLint 9対応のFlat Config形式
+ * defineConfigを使用（tseslint.configは非推奨）
  */
+import { defineConfig } from "eslint/config";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import functional from "eslint-plugin-functional";
@@ -11,7 +13,7 @@ import prettier from "eslint-plugin-prettier/recommended";
 /**
  * 基本設定
  */
-export const baseConfig = tseslint.config(
+export const baseConfig = defineConfig([
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -39,6 +41,13 @@ export const baseConfig = tseslint.config(
       "no-console": "off",
     },
   },
+  // loggerモジュールではconsole出力を許可
+  {
+    files: ["**/logger/**/*.ts", "**/lib/logger.ts"],
+    rules: {
+      "no-console": "off",
+    },
+  },
   // tRPC routerではTRPCErrorのthrowが必要
   {
     files: ["**/router.ts", "**/trpc/**/*.ts"],
@@ -55,42 +64,48 @@ export const baseConfig = tseslint.config(
   },
   // Prettier統合（最後に配置）
   prettier,
-);
+]);
 
 /**
  * Node.js環境用設定
  */
-export const nodeConfig = tseslint.config(...baseConfig, {
-  languageOptions: {
-    globals: {
-      console: "readonly",
-      process: "readonly",
-      Buffer: "readonly",
-      __dirname: "readonly",
-      __filename: "readonly",
-      module: "readonly",
-      require: "readonly",
+export const nodeConfig = defineConfig([
+  ...baseConfig,
+  {
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        Buffer: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        module: "readonly",
+        require: "readonly",
+      },
     },
   },
-});
+]);
 
 /**
  * ブラウザ環境用設定
  */
-export const browserConfig = tseslint.config(...baseConfig, {
-  languageOptions: {
-    globals: {
-      window: "readonly",
-      document: "readonly",
-      navigator: "readonly",
-      console: "readonly",
-      localStorage: "readonly",
-      sessionStorage: "readonly",
-      fetch: "readonly",
-      URL: "readonly",
-      URLSearchParams: "readonly",
+export const browserConfig = defineConfig([
+  ...baseConfig,
+  {
+    languageOptions: {
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        console: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
+        fetch: "readonly",
+        URL: "readonly",
+        URLSearchParams: "readonly",
+      },
     },
   },
-});
+]);
 
 export default baseConfig;
