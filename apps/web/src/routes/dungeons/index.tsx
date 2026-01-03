@@ -51,7 +51,9 @@ function DungeonsPage() {
             >
               <h2 className="text-xl font-semibold">{dungeon.name}</h2>
               {dungeon.alias && (
-                <p className="text-zinc-500 text-sm italic">─ {dungeon.alias}</p>
+                <p className="text-zinc-500 text-sm italic">
+                  ─ {dungeon.alias}
+                </p>
               )}
               <div className="mt-2 flex flex-wrap gap-2">
                 {dungeon.tags.map((tag) => (

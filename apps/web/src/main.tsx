@@ -53,5 +53,5 @@ createRoot(document.getElementById("app")!).render(
         <RouterProvider router={router} />
       </TRPCProvider>
     </QueryClientProvider>
-  </StrictMode>
+  </StrictMode>,
 );

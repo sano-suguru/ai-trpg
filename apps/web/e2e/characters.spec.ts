@@ -13,7 +13,9 @@ test.describe("キャラクター一覧", () => {
     await page.goto("/characters");
 
     // ページタイトルの確認
-    await expect(page.getByRole("heading", { name: "キャラクター" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "キャラクター" }),
+    ).toBeVisible();
   });
 
   test("シードキャラクターが表示される", async ({ page }) => {
@@ -51,7 +53,9 @@ test.describe("キャラクター詳細", () => {
     await page.goto(`/characters/${SEED_CHARACTERS.sed.id}`);
 
     // 名前とタイトルが表示される
-    await expect(page.getByRole("heading", { name: SEED_CHARACTERS.sed.name })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: SEED_CHARACTERS.sed.name }),
+    ).toBeVisible();
     await expect(page.getByText(SEED_CHARACTERS.sed.title)).toBeVisible();
   });
 

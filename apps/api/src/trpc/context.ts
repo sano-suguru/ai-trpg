@@ -8,6 +8,10 @@
 import type { Context as HonoContext } from "hono";
 import { UnsafeIds, type UserId } from "@ai-trpg/shared/domain";
 import type { AuthUser as SupabaseAuthUser } from "../infrastructure/supabase/client";
+import type { LLMApiKeys } from "../services/llm/types";
+
+// Re-export for convenience
+export type { LLMApiKeys };
 
 // ========================================
 // Context Types
@@ -29,6 +33,7 @@ export interface AuthUser {
 export interface TRPCContext {
   readonly honoContext: HonoContext;
   readonly user: AuthUser | null;
+  readonly llmApiKeys: LLMApiKeys;
   readonly [key: string]: unknown;
 }
 
@@ -44,10 +49,20 @@ export interface AuthenticatedTRPCContext extends TRPCContext {
 // ========================================
 
 /**
+ * 環境変数の型
+ */
+interface Env {
+  GROQ_API_KEY?: string;
+  GEMINI_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
+}
+
+/**
  * Honoコンテキストの型（認証ミドルウェア適用後）
  */
 interface AuthenticatedHonoContext extends HonoContext {
   get(key: "user"): SupabaseAuthUser | null;
+  env: Env;
 }
 
 /**
@@ -68,9 +83,17 @@ export function createContext(_opts: unknown, c: HonoContext): TRPCContext {
     ? { id: UnsafeIds.userId(supabaseUser.id) }
     : null;
 
+  // LLM APIキーを取得（環境変数からLLMApiKeys型に変換）
+  const llmApiKeys: LLMApiKeys = {
+    groq: honoCtx.env.GROQ_API_KEY,
+    gemini: honoCtx.env.GEMINI_API_KEY,
+    openrouter: honoCtx.env.OPENROUTER_API_KEY,
+  };
+
   return {
     honoContext: c,
     user,
+    llmApiKeys,
   };
 }
 

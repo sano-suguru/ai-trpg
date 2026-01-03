@@ -27,6 +27,9 @@ interface Env {
   DATABASE_URL: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_KEY: string;
+  // LLM API Keys (optional)
+  GROQ_API_KEY?: string;
+  GEMINI_API_KEY?: string;
 }
 
 interface Variables {

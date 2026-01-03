@@ -13,7 +13,9 @@ test.describe("ダンジョン一覧", () => {
     await page.goto("/dungeons");
 
     // ページタイトルの確認
-    await expect(page.getByRole("heading", { name: "ダンジョン" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "ダンジョン" }),
+    ).toBeVisible();
   });
 
   test("シードダンジョンが表示される", async ({ page }) => {
@@ -21,7 +23,9 @@ test.describe("ダンジョン一覧", () => {
 
     // 各ダンジョンのカードが表示されることを確認
     for (const dungeon of Object.values(SEED_DUNGEONS)) {
-      await expect(page.getByRole("link", { name: dungeon.name })).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: dungeon.name }),
+      ).toBeVisible();
     }
   });
 
@@ -38,10 +42,14 @@ test.describe("ダンジョン詳細", () => {
     await page.goto("/dungeons");
 
     // ダンジョンカードが表示されるまで待機
-    await page.getByRole("link", { name: SEED_DUNGEONS.cathedral.name }).waitFor();
+    await page
+      .getByRole("link", { name: SEED_DUNGEONS.cathedral.name })
+      .waitFor();
 
     // 忘却の聖堂のカードをクリック
-    await page.getByRole("link", { name: SEED_DUNGEONS.cathedral.name }).click();
+    await page
+      .getByRole("link", { name: SEED_DUNGEONS.cathedral.name })
+      .click();
 
     // URLが変わることを確認
     await expect(page).toHaveURL(`/dungeons/${SEED_DUNGEONS.cathedral.id}`);
@@ -51,7 +59,9 @@ test.describe("ダンジョン詳細", () => {
     await page.goto(`/dungeons/${SEED_DUNGEONS.cathedral.id}`);
 
     // 名前と異名が表示される
-    await expect(page.getByRole("heading", { name: SEED_DUNGEONS.cathedral.name })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: SEED_DUNGEONS.cathedral.name }),
+    ).toBeVisible();
     await expect(page.getByText(SEED_DUNGEONS.cathedral.alias)).toBeVisible();
   });
 

@@ -45,6 +45,25 @@ ai-trpg/
 └── .claude/           # Claude Code tasks and prompts
 ```
 
+## Implemented Features
+
+### Authentication
+- Supabase Auth integration
+- Protected routes with login redirect
+- Session management
+
+### Character Creation
+- 4-step wizard: Fragment → Biography (AI) → Name/Directives → Confirm
+- Fragment selection (6 categories: origin, loss, mark, sin, quest, trait)
+- AI biography generation with LLM service (Groq/Gemini fallback)
+- AI name suggestions
+- Directive selection for 4 situations
+- Character save with lending settings
+
+### Master Data APIs
+- `fragment.list` - Get all fragments by category
+- `directive.list` - Get all directives by situation
+
 ## Dependency Rules
 - `apps/web` and `apps/api` depend on `packages/shared`
 - `apps/web` and `apps/api` must NOT depend on each other

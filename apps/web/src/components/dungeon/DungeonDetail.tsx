@@ -63,9 +63,7 @@ export function DungeonDetail({ dungeon }: DungeonDetailProps) {
           <span className="text-zinc-400">
             {dungeon.layerCount}層 / {dungeon.recommendedParty}
           </span>
-          <span className="text-zinc-500">
-            プレイ回数: {dungeon.playCount}
-          </span>
+          <span className="text-zinc-500">プレイ回数: {dungeon.playCount}</span>
         </div>
 
         {/* タグ */}

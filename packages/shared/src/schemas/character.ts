@@ -165,3 +165,42 @@ export const listBorrowableQuerySchema = z.object({
 });
 
 export type ListBorrowableQuery = z.infer<typeof listBorrowableQuerySchema>;
+
+// ========================================
+// LLM Generation Request Schemas
+// ========================================
+
+// Note: fragmentCategorySchema is defined in dungeon.ts and re-exported via index.ts
+
+/**
+ * 経歴生成リクエスト
+ */
+export const generateBiographySchema = z.object({
+  fragments: z.object({
+    origin: z.string().min(1, "出自は必須です"),
+    loss: z.string().min(1, "喪失は必須です"),
+    mark: z.string().min(1, "刻印は必須です"),
+    sin: z.string().nullable().optional(),
+    quest: z.string().nullable().optional(),
+    trait: z.string().nullable().optional(),
+  }),
+});
+
+export type GenerateBiographyInput = z.infer<typeof generateBiographySchema>;
+
+/**
+ * 名前生成リクエスト
+ */
+export const generateNamesSchema = z.object({
+  fragments: z.object({
+    origin: z.string().min(1, "出自は必須です"),
+    loss: z.string().min(1, "喪失は必須です"),
+    mark: z.string().min(1, "刻印は必須です"),
+    sin: z.string().nullable().optional(),
+    quest: z.string().nullable().optional(),
+    trait: z.string().nullable().optional(),
+  }),
+  biography: z.string().min(1, "経歴は必須です"),
+});
+
+export type GenerateNamesInput = z.infer<typeof generateNamesSchema>;
