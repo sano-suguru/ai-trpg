@@ -11,12 +11,15 @@ import {
 } from "@google/generative-ai";
 import { ResultAsync, errAsync, okAsync } from "neverthrow";
 import { Errors } from "@ai-trpg/shared/types";
+import { createLogger } from "../../logger";
 import type {
   LLMProvider,
   GenerateOptions,
   GenerateResult,
   LLMServiceError,
 } from "../types";
+
+const logger = createLogger("LLM:Gemini");
 
 // ========================================
 // Constants
@@ -76,6 +79,7 @@ export function createGeminiProvider(apiKey?: string): LLMProvider {
     options?: GenerateOptions,
   ): ResultAsync<GenerateResult, LLMServiceError> => {
     if (!client) {
+      logger.warn("API key not configured");
       return errAsync(
         Errors.llm(PROVIDER_NAME, "Gemini APIキーが設定されていません"),
       );
@@ -102,6 +106,14 @@ export function createGeminiProvider(apiKey?: string): LLMProvider {
     // タイムアウト設定（SDKのtimeoutオプションを使用）
     const timeout = options?.timeout ?? DEFAULT_TIMEOUT;
 
+    logger.debug("Starting generation", {
+      model: DEFAULT_MODEL,
+      maxTokens,
+      temperature,
+      promptLength: prompt.length,
+      hasSystemPrompt: !!systemPrompt,
+    });
+
     return ResultAsync.fromPromise(
       model.generateContent(fullPrompt, { timeout }),
       (error): LLMServiceError => {
@@ -110,15 +122,18 @@ export function createGeminiProvider(apiKey?: string): LLMProvider {
 
         // レート制限エラーの判定（Geminiの429エラー）
         if (message.includes("429") || message.includes("rate limit")) {
+          logger.warn("Rate limit exceeded");
           return Errors.llmRateLimit(PROVIDER_NAME);
         }
 
+        logger.error("API call failed", { error: message });
         return Errors.llm(PROVIDER_NAME, message);
       },
     ).andThen((response) => {
       const text = response.response.text();
 
       if (!text) {
+        logger.warn("Empty response from API");
         return errAsync(Errors.llm(PROVIDER_NAME, "生成結果が空です"));
       }
 
@@ -127,6 +142,10 @@ export function createGeminiProvider(apiKey?: string): LLMProvider {
         provider: PROVIDER_NAME,
         // Geminiは使用トークン情報を直接提供しないため省略
       };
+
+      logger.debug("Generation completed", {
+        responseLength: text.length,
+      });
 
       return okAsync(result);
     });

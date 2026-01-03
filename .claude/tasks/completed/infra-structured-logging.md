@@ -17,16 +17,16 @@ API層に構造化ログの基盤を整備し、`console.log` / `console.error` 
 
 ### 機能要件
 
-- [ ] 構造化ログユーティリティの作成
-- [ ] ログレベルのサポート（debug, info, warn, error）
-- [ ] 環境変数によるログレベル制御
-- [ ] JSON形式での出力オプション
-- [ ] 既存の `console.log` / `console.error` を置き換え
+- [x] 構造化ログユーティリティの作成
+- [x] ログレベルのサポート（debug, info, warn, error）
+- [x] 環境変数によるログレベル制御
+- [x] JSON形式での出力オプション
+- [x] 既存の `console.log` / `console.error` を置き換え
 
 ### 非機能要件
 
-- [ ] パフォーマンス: ログ出力によるレイテンシ増加を最小限に
-- [ ] Cloudflare Workers環境での動作保証
+- [x] パフォーマンス: ログ出力によるレイテンシ増加を最小限に
+- [x] Cloudflare Workers環境での動作保証
 
 ## 設計
 
@@ -69,22 +69,22 @@ function createLogger(name: string): Logger;
 
 ## 実装手順
 
-1. [ ] `api/services/logger/` にLoggerユーティリティ作成
-2. [ ] 環境変数 `LOG_LEVEL` のサポート追加
-3. [ ] LLMサービスの `console.log` / `console.error` を置き換え
-4. [ ] 他の箇所も必要に応じて置き換え
+1. [x] `api/services/logger/` にLoggerユーティリティ作成
+2. [x] 環境変数 `LOG_LEVEL` のサポート追加
+3. [x] LLMサービスの `console.log` / `console.error` を置き換え
+4. [x] 他の箇所も必要に応じて置き換え
 
 ## テスト計画
 
-- [ ] 手動テスト: ログ出力が正しいフォーマットで行われることを確認
-- [ ] 手動テスト: LOG_LEVELによるフィルタリングが動作することを確認
+- [x] 手動テスト: ログ出力が正しいフォーマットで行われることを確認
+- [x] 手動テスト: LOG_LEVELによるフィルタリングが動作することを確認
 
 ## 完了条件
 
-- [ ] 全ての `console.log` / `console.error` が構造化ログに置き換えられている
-- [ ] `pnpm lint` がパス
-- [ ] `pnpm typecheck` がパス
-- [ ] 開発環境でログ出力が確認できる
+- [x] 全ての `console.log` / `console.error` が構造化ログに置き換えられている
+- [x] `pnpm lint` がパス
+- [x] `pnpm typecheck` がパス
+- [x] 開発環境でログ出力が確認できる
 
 ## 参考
 
@@ -130,8 +130,8 @@ if (index >= availableProviders.length) {
 
 ### 追加タスク
 
-- [ ] `apps/api/src/services/llm/service.ts` のフォールバック失敗時ログ追加
-- [ ] 各プロバイダー失敗時の警告ログ追加
+- [x] `apps/api/src/services/llm/service.ts` のフォールバック失敗時ログ追加
+- [x] 各プロバイダー失敗時の警告ログ追加
 
 ## 関連: E2Eテストのエラーハンドリング改善
 
@@ -184,5 +184,6 @@ try {
 ---
 
 **作成日:** 2026-01-03
-**担当:**
-**ステータス:** Ready
+**完了日:** 2026-01-03
+**担当:** Claude
+**ステータス:** Completed

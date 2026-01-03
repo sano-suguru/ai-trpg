@@ -8,12 +8,15 @@
 import { OpenRouter } from "@openrouter/sdk";
 import { ResultAsync, errAsync, okAsync } from "neverthrow";
 import { Errors } from "@ai-trpg/shared/types";
+import { createLogger } from "../../logger";
 import type {
   LLMProvider,
   GenerateOptions,
   GenerateResult,
   LLMServiceError,
 } from "../types";
+
+const logger = createLogger("LLM:OpenRouter");
 
 // ========================================
 // Constants
@@ -51,6 +54,7 @@ export function createOpenRouterProvider(apiKey?: string): LLMProvider {
     options?: GenerateOptions,
   ): ResultAsync<GenerateResult, LLMServiceError> => {
     if (!client) {
+      logger.warn("API key not configured");
       return errAsync(
         Errors.llm(PROVIDER_NAME, "OpenRouter APIキーが設定されていません"),
       );
@@ -67,6 +71,14 @@ export function createOpenRouterProvider(apiKey?: string): LLMProvider {
       messages.push({ role: "system", content: systemPrompt });
     }
     messages.push({ role: "user", content: prompt });
+
+    logger.debug("Starting generation", {
+      model: DEFAULT_MODEL,
+      maxTokens,
+      temperature,
+      promptLength: prompt.length,
+      hasSystemPrompt: !!systemPrompt,
+    });
 
     return ResultAsync.fromPromise(
       client.chat.send(
@@ -87,9 +99,11 @@ export function createOpenRouterProvider(apiKey?: string): LLMProvider {
 
         // レート制限エラーの判定
         if (message.includes("429") || message.includes("rate limit")) {
+          logger.warn("Rate limit exceeded");
           return Errors.llmRateLimit(PROVIDER_NAME);
         }
 
+        logger.error("API call failed", { error: message });
         return Errors.llm(PROVIDER_NAME, message);
       },
     ).andThen((response) => {
@@ -110,6 +124,7 @@ export function createOpenRouterProvider(apiKey?: string): LLMProvider {
             : null;
 
       if (!content) {
+        logger.warn("Empty response from API");
         return errAsync(Errors.llm(PROVIDER_NAME, "生成結果が空です"));
       }
 
@@ -124,6 +139,12 @@ export function createOpenRouterProvider(apiKey?: string): LLMProvider {
             }
           : undefined,
       };
+
+      logger.debug("Generation completed", {
+        responseLength: content.length,
+        promptTokens: result.tokens?.prompt,
+        completionTokens: result.tokens?.completion,
+      });
 
       return okAsync(result);
     });

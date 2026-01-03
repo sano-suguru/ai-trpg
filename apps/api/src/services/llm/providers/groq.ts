@@ -14,6 +14,7 @@ import "groq-sdk/shims/web";
 import Groq from "groq-sdk";
 import { ResultAsync, errAsync, okAsync } from "neverthrow";
 import { Errors } from "@ai-trpg/shared/types";
+import { createLogger } from "../../logger";
 import type {
   LLMProvider,
   GenerateOptions,
@@ -21,6 +22,8 @@ import type {
   LLMServiceError,
   AIGatewayConfig,
 } from "../types";
+
+const logger = createLogger("LLM:Groq");
 
 // ========================================
 // Constants
@@ -82,6 +85,7 @@ export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
     options?: GenerateOptions,
   ): ResultAsync<GenerateResult, LLMServiceError> => {
     if (!client) {
+      logger.warn("API key not configured");
       return errAsync(
         Errors.llm(PROVIDER_NAME, "Groq APIキーが設定されていません"),
       );
@@ -98,6 +102,14 @@ export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
     }
     messages.push({ role: "user", content: prompt });
 
+    logger.debug("Starting generation", {
+      model: DEFAULT_MODEL,
+      maxTokens,
+      temperature,
+      promptLength: prompt.length,
+      hasSystemPrompt: !!systemPrompt,
+    });
+
     return ResultAsync.fromPromise(
       client.chat.completions.create(
         {
@@ -113,17 +125,20 @@ export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
       (error): LLMServiceError => {
         // レート制限エラーの判定
         if (error instanceof Groq.RateLimitError) {
+          logger.warn("Rate limit exceeded");
           return Errors.llmRateLimit(PROVIDER_NAME);
         }
         // その他のエラー
         const message =
           error instanceof Error ? error.message : "不明なエラーが発生しました";
+        logger.error("API call failed", { error: message });
         return Errors.llm(PROVIDER_NAME, message);
       },
     ).andThen((response) => {
       const content = response.choices[0]?.message?.content;
 
       if (!content) {
+        logger.warn("Empty response from API");
         return errAsync(Errors.llm(PROVIDER_NAME, "生成結果が空です"));
       }
 
@@ -138,6 +153,12 @@ export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
             }
           : undefined,
       };
+
+      logger.debug("Generation completed", {
+        responseLength: content.length,
+        promptTokens: result.tokens?.prompt,
+        completionTokens: result.tokens?.completion,
+      });
 
       return okAsync(result);
     });

@@ -11,8 +11,11 @@ import {
   type RateLimitError,
   type DatabaseError,
 } from "@ai-trpg/shared/types";
+import { createLogger } from "../../services/logger";
 import type { Database } from "../database/client";
 import { llmUsageLogs } from "../database/schema";
+
+const logger = createLogger("RateLimit");
 
 // ========================================
 // Constants
@@ -82,8 +85,21 @@ export function checkRateLimit(
   ).andThen((requestCount) => {
     if (requestCount >= config.maxRequests) {
       const retryAfter = Math.ceil(config.windowMs / 1000);
+      logger.warn("Rate limit exceeded", {
+        userId,
+        endpoint,
+        requestCount,
+        maxRequests: config.maxRequests,
+        retryAfter,
+      });
       return errAsync(Errors.rateLimit(endpoint, retryAfter));
     }
+    logger.debug("Rate limit check passed", {
+      userId,
+      endpoint,
+      requestCount,
+      maxRequests: config.maxRequests,
+    });
     return okAsync(undefined);
   });
 }
@@ -145,11 +161,12 @@ function cleanupOldLogs(db: Database): void {
   db.delete(llmUsageLogs)
     .where(lt(llmUsageLogs.createdAt, cutoff))
     .then(() => {
-      // 成功時は何もしない
+      logger.debug("Old logs cleanup completed");
     })
-    .catch(() => {
-      // TODO: 構造化ログ導入後、失敗時に警告ログを出力
-      // (see .claude/tasks/infra-structured-logging.md)
+    .catch((error) => {
+      logger.warn("Old logs cleanup failed", {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     });
 }
 
@@ -197,10 +214,15 @@ export function withRateLimit<T, E>(
   return (
     checkRateLimit(db, userId, endpoint, config)
       // 使用ログ記録（失敗してもユーザー体験を優先して続行）
-      // TODO: 構造化ログ導入後、失敗時に警告ログを出力
-      // (see .claude/tasks/infra-structured-logging.md)
       .andThen(() =>
-        logUsage(db, userId, endpoint).orElse(() => okAsync(undefined)),
+        logUsage(db, userId, endpoint).orElse((error) => {
+          logger.warn("Usage log recording failed", {
+            userId,
+            endpoint,
+            error: error.message,
+          });
+          return okAsync(undefined);
+        }),
       )
       .andThen(() => fn())
   );

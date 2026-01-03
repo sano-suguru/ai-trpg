@@ -6,6 +6,7 @@
 
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { logger } from "@/lib/logger";
 
 // ========================================
 // Types
@@ -219,6 +220,8 @@ export const useCharacterCreationStore = create<
     // ========================================
 
     goToStep: (step) => {
+      const fromStep = get().currentStep;
+      logger.debug("Wizard: Step changed", { from: fromStep, to: step });
       set((state) => {
         state.currentStep = step;
       });
@@ -228,7 +231,12 @@ export const useCharacterCreationStore = create<
       set((state) => {
         const currentIndex = stepOrder.indexOf(state.currentStep);
         if (currentIndex < stepOrder.length - 1) {
-          state.currentStep = stepOrder[currentIndex + 1];
+          const nextStep = stepOrder[currentIndex + 1];
+          logger.info("Wizard: Moving to next step", {
+            from: state.currentStep,
+            to: nextStep,
+          });
+          state.currentStep = nextStep;
         }
       });
     },
@@ -237,7 +245,12 @@ export const useCharacterCreationStore = create<
       set((state) => {
         const currentIndex = stepOrder.indexOf(state.currentStep);
         if (currentIndex > 0) {
-          state.currentStep = stepOrder[currentIndex - 1];
+          const prevStep = stepOrder[currentIndex - 1];
+          logger.debug("Wizard: Moving to previous step", {
+            from: state.currentStep,
+            to: prevStep,
+          });
+          state.currentStep = prevStep;
         }
       });
     },
@@ -247,6 +260,7 @@ export const useCharacterCreationStore = create<
     // ========================================
 
     setFragment: (category, text) => {
+      logger.debug("Wizard: Fragment selected", { category, text });
       set((state) => {
         state.fragments[category] = text;
       });
@@ -279,6 +293,9 @@ export const useCharacterCreationStore = create<
     },
 
     setBiographyError: (error) => {
+      if (error) {
+        logger.error("Wizard: Biography generation failed", { error });
+      }
       set((state) => {
         state.biographyError = error;
       });
@@ -289,6 +306,9 @@ export const useCharacterCreationStore = create<
     // ========================================
 
     setNameCandidates: (candidates) => {
+      logger.debug("Wizard: Name candidates received", {
+        count: candidates.length,
+      });
       set((state) => {
         state.nameCandidates = candidates;
       });
@@ -319,6 +339,9 @@ export const useCharacterCreationStore = create<
     },
 
     setNamesError: (error) => {
+      if (error) {
+        logger.error("Wizard: Name generation failed", { error });
+      }
       set((state) => {
         state.namesError = error;
       });
@@ -346,6 +369,9 @@ export const useCharacterCreationStore = create<
     },
 
     setSubmitError: (error) => {
+      if (error) {
+        logger.error("Wizard: Character creation failed", { error });
+      }
       set((state) => {
         state.submitError = error;
       });
@@ -356,6 +382,7 @@ export const useCharacterCreationStore = create<
     // ========================================
 
     reset: () => {
+      logger.info("Wizard: State reset");
       set(initialState);
     },
 
