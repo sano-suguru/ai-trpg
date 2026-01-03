@@ -33,24 +33,24 @@
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `web` | `src/lib/trpc.ts` | tRPCクライアント設定 |
-| `web` | `src/routes/` | ルート定義 |
-| `web` | `src/components/layout/` | レイアウトコンポーネント |
-| `web` | `src/pages/` | ページコンポーネント |
-| `web` | `src/App.tsx` | ルーター統合 |
-| `web` | `src/main.tsx` | プロバイダー設定 |
-| `web` | `package.json` | 依存関係追加 |
-| `api` | `src/index.ts` | CORS設定（必要に応じて） |
+| パッケージ | ファイル                 | 変更内容                 |
+| ---------- | ------------------------ | ------------------------ |
+| `web`      | `src/lib/trpc.ts`        | tRPCクライアント設定     |
+| `web`      | `src/routes/`            | ルート定義               |
+| `web`      | `src/components/layout/` | レイアウトコンポーネント |
+| `web`      | `src/pages/`             | ページコンポーネント     |
+| `web`      | `src/App.tsx`            | ルーター統合             |
+| `web`      | `src/main.tsx`           | プロバイダー設定         |
+| `web`      | `package.json`           | 依存関係追加             |
+| `api`      | `src/index.ts`           | CORS設定（必要に応じて） |
 
 ### 技術選定
 
-| カテゴリ | 選定 | 理由 |
-|---------|------|------|
-| ルーティング | TanStack Router | 型安全、ファイルベースルーティング、React 19対応 |
-| データフェッチ | TanStack Query + tRPC | 既存のtRPCルーターと統合、キャッシュ管理 |
-| 状態管理 | Zustand（既存） | シンプル、React 19対応済み |
+| カテゴリ       | 選定                  | 理由                                             |
+| -------------- | --------------------- | ------------------------------------------------ |
+| ルーティング   | TanStack Router       | 型安全、ファイルベースルーティング、React 19対応 |
+| データフェッチ | TanStack Query + tRPC | 既存のtRPCルーターと統合、キャッシュ管理         |
+| 状態管理       | Zustand（既存）       | シンプル、React 19対応済み                       |
 
 ### ディレクトリ構成
 

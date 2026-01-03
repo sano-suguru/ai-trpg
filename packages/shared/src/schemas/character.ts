@@ -25,7 +25,7 @@ const DIRECTIVE_MAX_LENGTH = 200;
 // ========================================
 
 /** UUID形式のID */
-export const uuidSchema = z.string().uuid();
+export const uuidSchema = z.uuid();
 
 /** キャラクター名 */
 export const characterNameSchema = z
@@ -174,33 +174,23 @@ export type ListBorrowableQuery = z.infer<typeof listBorrowableQuerySchema>;
 
 /**
  * 経歴生成リクエスト
+ *
+ * fragmentsInputSchemaを再利用し、断片の制約を統一
  */
 export const generateBiographySchema = z.object({
-  fragments: z.object({
-    origin: z.string().min(1, "出自は必須です"),
-    loss: z.string().min(1, "喪失は必須です"),
-    mark: z.string().min(1, "刻印は必須です"),
-    sin: z.string().nullable().optional(),
-    quest: z.string().nullable().optional(),
-    trait: z.string().nullable().optional(),
-  }),
+  fragments: fragmentsInputSchema,
 });
 
 export type GenerateBiographyInput = z.infer<typeof generateBiographySchema>;
 
 /**
  * 名前生成リクエスト
+ *
+ * fragmentsInputSchemaを再利用し、断片の制約を統一
  */
 export const generateNamesSchema = z.object({
-  fragments: z.object({
-    origin: z.string().min(1, "出自は必須です"),
-    loss: z.string().min(1, "喪失は必須です"),
-    mark: z.string().min(1, "刻印は必須です"),
-    sin: z.string().nullable().optional(),
-    quest: z.string().nullable().optional(),
-    trait: z.string().nullable().optional(),
-  }),
-  biography: z.string().min(1, "経歴は必須です"),
+  fragments: fragmentsInputSchema,
+  biography: biographySchema.min(1, "経歴は必須です"),
 });
 
 export type GenerateNamesInput = z.infer<typeof generateNamesSchema>;

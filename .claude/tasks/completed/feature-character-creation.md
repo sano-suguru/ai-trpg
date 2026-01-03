@@ -49,17 +49,17 @@
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `shared` | `constants/fragments.ts` | 断片マスターデータ |
-| `shared` | `constants/directives.ts` | 行動指針マスターデータ |
-| `api` | `src/services/llm/` | LLMサービス層 |
-| `api` | `src/services/llm/providers/` | 各プロバイダー実装 |
-| `api` | `src/services/llm/prompts/` | プロンプトテンプレート |
-| `api` | `src/features/character/router.ts` | 生成エンドポイント追加 |
-| `web` | `src/routes/characters.new.tsx` | 作成ページ |
-| `web` | `src/components/character/wizard/` | ウィザードコンポーネント |
-| `web` | `src/stores/characterCreation.ts` | 作成状態管理 |
+| パッケージ | ファイル                           | 変更内容                 |
+| ---------- | ---------------------------------- | ------------------------ |
+| `shared`   | `constants/fragments.ts`           | 断片マスターデータ       |
+| `shared`   | `constants/directives.ts`          | 行動指針マスターデータ   |
+| `api`      | `src/services/llm/`                | LLMサービス層            |
+| `api`      | `src/services/llm/providers/`      | 各プロバイダー実装       |
+| `api`      | `src/services/llm/prompts/`        | プロンプトテンプレート   |
+| `api`      | `src/features/character/router.ts` | 生成エンドポイント追加   |
+| `web`      | `src/routes/characters.new.tsx`    | 作成ページ               |
+| `web`      | `src/components/character/wizard/` | ウィザードコンポーネント |
+| `web`      | `src/stores/characterCreation.ts`  | 作成状態管理             |
 
 ### LLMサービス設計
 
@@ -67,13 +67,20 @@
 // LLMプロバイダーインターフェース
 interface LLMProvider {
   readonly name: string;
-  generate(prompt: string, options?: GenerateOptions): ResultAsync<string, LLMError>;
+  generate(
+    prompt: string,
+    options?: GenerateOptions,
+  ): ResultAsync<string, LLMError>;
 }
 
 // LLMサービス（フォールバック付き）
 interface LLMService {
-  generateBiography(fragments: CharacterFragments): ResultAsync<string, LLMError>;
-  generateNameSuggestions(fragments: CharacterFragments): ResultAsync<string[], LLMError>;
+  generateBiography(
+    fragments: CharacterFragments,
+  ): ResultAsync<string, LLMError>;
+  generateNameSuggestions(
+    fragments: CharacterFragments,
+  ): ResultAsync<string[], LLMError>;
 }
 
 // プロバイダー優先順位
@@ -84,13 +91,13 @@ interface LLMService {
 
 ### API
 
-| エンドポイント | メソッド | 認証 | 説明 |
-|---------------|----------|------|------|
-| `character.generateBiography` | Mutation | 要 | 断片から人物像を生成 |
-| `character.generateNames` | Mutation | 要 | 名前候補を生成 |
-| `character.create` | Mutation | 要 | キャラクター保存（既存） |
-| `fragments.list` | Query | 不要 | 断片一覧取得 |
-| `directives.list` | Query | 不要 | 行動指針一覧取得 |
+| エンドポイント                | メソッド | 認証 | 説明                     |
+| ----------------------------- | -------- | ---- | ------------------------ |
+| `character.generateBiography` | Mutation | 要   | 断片から人物像を生成     |
+| `character.generateNames`     | Mutation | 要   | 名前候補を生成           |
+| `character.create`            | Mutation | 要   | キャラクター保存（既存） |
+| `fragments.list`              | Query    | 不要 | 断片一覧取得             |
+| `directives.list`             | Query    | 不要 | 行動指針一覧取得         |
 
 ### ウィザードステップ
 
@@ -231,36 +238,38 @@ interface CharacterCreationStore {
 ### 断片の型定義
 
 `packages/shared/src/domain/character/fragments.ts`:
+
 ```typescript
 // 断片カテゴリ
 export const FragmentCategories = {
-  ORIGIN: "origin",      // 出自（必須）
-  LOSS: "loss",          // 喪失（必須）
-  MARK: "mark",          // 刻印（必須）
-  SIN: "sin",            // 業（任意）
-  QUEST: "quest",        // 探求（任意）
-  TRAIT: "trait",        // 癖/性向（任意）
+  ORIGIN: "origin", // 出自（必須）
+  LOSS: "loss", // 喪失（必須）
+  MARK: "mark", // 刻印（必須）
+  SIN: "sin", // 業（任意）
+  QUEST: "quest", // 探求（任意）
+  TRAIT: "trait", // 癖/性向（任意）
 } as const;
 
 export interface CharacterFragments {
-  readonly origin: Fragment;  // 必須
-  readonly loss: Fragment;    // 必須
-  readonly mark: Fragment;    // 必須
-  readonly sin: Fragment | null;    // 任意
-  readonly quest: Fragment | null;  // 任意
-  readonly trait: Fragment | null;  // 任意
+  readonly origin: Fragment; // 必須
+  readonly loss: Fragment; // 必須
+  readonly mark: Fragment; // 必須
+  readonly sin: Fragment | null; // 任意
+  readonly quest: Fragment | null; // 任意
+  readonly trait: Fragment | null; // 任意
 }
 ```
 
 ### 行動指針の型定義
 
 `packages/shared/src/domain/character/directives.ts`:
+
 ```typescript
 export const DirectiveSituations = {
-  DANGER: "danger",              // 危険を前にしたとき
+  DANGER: "danger", // 危険を前にしたとき
   ALLY_IN_PERIL: "ally_in_peril", // 仲間が窮地に陥ったとき
-  MORAL_CHOICE: "moral_choice",   // 道徳的選択を迫られたとき
-  UNKNOWN: "unknown",             // 未知のものに遭遇したとき
+  MORAL_CHOICE: "moral_choice", // 道徳的選択を迫られたとき
+  UNKNOWN: "unknown", // 未知のものに遭遇したとき
 } as const;
 
 export interface CharacterDirectives {
@@ -274,6 +283,7 @@ export interface CharacterDirectives {
 ### キャラクター作成API
 
 `apps/api/src/features/character/router.ts`:
+
 ```typescript
 // create は protectedProcedure（認証必須）
 create: protectedProcedure
@@ -287,6 +297,7 @@ create: protectedProcedure
 ### Zodスキーマ
 
 `packages/shared/src/schemas/character.ts`:
+
 ```typescript
 export const createCharacterSchema = z.object({
   name: z.string().min(1).max(50),
@@ -303,25 +314,21 @@ export const createCharacterSchema = z.object({
 ### エラーハンドリングパターン
 
 `packages/shared/src/lib/result.ts`:
+
 ```typescript
 // LLM呼び出しのエラーハンドリング
-const result = await wrapExternalCall(
-  llmProvider.generate(prompt),
-  'Groq'
-);
+const result = await wrapExternalCall(llmProvider.generate(prompt), "Groq");
 
 if (result.isErr()) {
   // フォールバックプロバイダーを試行
-  return await wrapExternalCall(
-    fallbackProvider.generate(prompt),
-    'Gemini'
-  );
+  return await wrapExternalCall(fallbackProvider.generate(prompt), "Gemini");
 }
 ```
 
 ### 既存LLMエラー型
 
 `packages/shared/src/types/errors.ts`:
+
 ```typescript
 export interface LLMError extends BaseError {
   readonly code: "LLM_ERROR";
@@ -335,8 +342,8 @@ export interface LLMRateLimitError extends BaseError {
 }
 
 // ファクトリ関数
-Errors.llm("Groq", "生成に失敗しました")
-Errors.llmRateLimit("Groq", 60)
+Errors.llm("Groq", "生成に失敗しました");
+Errors.llmRateLimit("Groq", 60);
 ```
 
 ## 参考

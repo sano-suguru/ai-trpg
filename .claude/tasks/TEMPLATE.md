@@ -25,11 +25,11 @@
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `shared` | `domain/xxx/` | 新規ドメインモデル追加 |
-| `api` | `features/xxx/` | 新規Feature Slice追加 |
-| `web` | `components/xxx/` | UI追加 |
+| パッケージ | ファイル          | 変更内容               |
+| ---------- | ----------------- | ---------------------- |
+| `shared`   | `domain/xxx/`     | 新規ドメインモデル追加 |
+| `api`      | `features/xxx/`   | 新規Feature Slice追加  |
+| `web`      | `components/xxx/` | UI追加                 |
 
 ### ドメインモデル
 
@@ -43,10 +43,10 @@ interface XXX {
 
 ### API
 
-| エンドポイント | メソッド | 認証 | 説明 |
-|---------------|----------|------|------|
-| `xxx.list` | Query | 不要 | 一覧取得 |
-| `xxx.create` | Mutation | 要 | 新規作成 |
+| エンドポイント | メソッド | 認証 | 説明     |
+| -------------- | -------- | ---- | -------- |
+| `xxx.list`     | Query    | 不要 | 一覧取得 |
+| `xxx.create`   | Mutation | 要   | 新規作成 |
 
 ## 実装手順
 
@@ -80,4 +80,5 @@ interface XXX {
 **作成日:** YYYY-MM-DD
 **担当:**
 **ステータス:** Draft / Ready / In Progress / Completed
+
 <!-- 完了したタスクは completed/ フォルダに移動 -->

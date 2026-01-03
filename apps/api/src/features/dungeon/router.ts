@@ -78,7 +78,7 @@ export function createDungeonRouter(deps: DungeonRouterDeps) {
      * ダンジョン取得
      */
     get: publicProcedure
-      .input(z.object({ id: z.string().uuid() }))
+      .input(z.object({ id: z.uuid() }))
       .query(async ({ input }) => {
         const dungeonIdResult = createDungeonId(input.id);
         if (dungeonIdResult.isErr()) {
@@ -139,7 +139,7 @@ export function createDungeonRouter(deps: DungeonRouterDeps) {
     update: protectedProcedure
       .input(
         z.object({
-          id: z.string().uuid(),
+          id: z.uuid(),
           data: updateDungeonSchema,
         }),
       )
@@ -172,7 +172,7 @@ export function createDungeonRouter(deps: DungeonRouterDeps) {
      * ダンジョン削除
      */
     delete: protectedProcedure
-      .input(z.object({ id: z.string().uuid() }))
+      .input(z.object({ id: z.uuid() }))
       .mutation(async ({ ctx, input }) => {
         const dungeonIdResult = createDungeonId(input.id);
         if (dungeonIdResult.isErr()) {

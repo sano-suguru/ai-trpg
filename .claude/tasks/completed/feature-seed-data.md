@@ -37,16 +37,16 @@
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `api` | `src/scripts/seed.ts` | シードスクリプト |
-| `api` | `src/data/characters.ts` | サンプルキャラクターデータ |
-| `api` | `src/data/dungeons.ts` | サンプルダンジョンデータ |
-| `api` | `package.json` | seedコマンド追加 |
-| `web` | `src/routes/characters.$id.tsx` | キャラクター詳細ページ |
-| `web` | `src/routes/dungeons.$id.tsx` | ダンジョン詳細ページ |
-| `web` | `src/components/character/` | キャラクター表示コンポーネント |
-| `web` | `src/components/dungeon/` | ダンジョン表示コンポーネント |
+| パッケージ | ファイル                        | 変更内容                       |
+| ---------- | ------------------------------- | ------------------------------ |
+| `api`      | `src/scripts/seed.ts`           | シードスクリプト               |
+| `api`      | `src/data/characters.ts`        | サンプルキャラクターデータ     |
+| `api`      | `src/data/dungeons.ts`          | サンプルダンジョンデータ       |
+| `api`      | `package.json`                  | seedコマンド追加               |
+| `web`      | `src/routes/characters.$id.tsx` | キャラクター詳細ページ         |
+| `web`      | `src/routes/dungeons.$id.tsx`   | ダンジョン詳細ページ           |
+| `web`      | `src/components/character/`     | キャラクター表示コンポーネント |
+| `web`      | `src/components/dungeon/`       | ダンジョン表示コンポーネント   |
 
 ### サンプルデータ
 
@@ -100,10 +100,10 @@ isOfficial: true
 
 ### API
 
-| エンドポイント | メソッド | 認証 | 説明 |
-|---------------|----------|------|------|
-| `character.get` | Query | 不要 | 単体取得（既存） |
-| `dungeon.get` | Query | 不要 | 単体取得（既存） |
+| エンドポイント  | メソッド | 認証 | 説明             |
+| --------------- | -------- | ---- | ---------------- |
+| `character.get` | Query    | 不要 | 単体取得（既存） |
+| `dungeon.get`   | Query    | 不要 | 単体取得（既存） |
 
 ### ページ構成
 
@@ -200,6 +200,7 @@ isOfficial: true
 ### キャラクタードメインモデル
 
 `packages/shared/src/domain/character/types.ts`:
+
 ```typescript
 // Character の完全な型定義
 export interface Character {
@@ -216,7 +217,7 @@ export interface Character {
   readonly relationships: readonly Relationship[];
   readonly currentWounds: readonly string[];
   readonly currentQuestions: readonly string[];
-  readonly lending: LendingSetting;  // "all" | "safe" | "private"
+  readonly lending: LendingSetting; // "all" | "safe" | "private"
   readonly isPublic: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
@@ -226,6 +227,7 @@ export interface Character {
 ### ダンジョンドメインモデル
 
 `packages/shared/src/domain/dungeon/types.ts`:
+
 ```typescript
 export interface Dungeon {
   readonly _tag: "Dungeon";
@@ -251,6 +253,7 @@ export interface Dungeon {
 ### APIルーターパターン
 
 `apps/api/src/features/character/router.ts`:
+
 ```typescript
 // get は protectedProcedure だが、シードデータ確認には listBorrowable を使用可能
 listBorrowable: publicProcedure.query(async () => {
@@ -265,6 +268,7 @@ listBorrowable: publicProcedure.query(async () => {
 ### フロントエンド一覧ページ
 
 `apps/web/src/routes/characters.tsx`:
+
 ```typescript
 // 現在の実装 - カードをリンクに変更する必要あり
 {characters.map((char) => (
@@ -278,6 +282,7 @@ listBorrowable: publicProcedure.query(async () => {
 ### TanStack Routerルート定義パターン
 
 `apps/web/src/routes/characters.tsx`:
+
 ```typescript
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -287,6 +292,7 @@ export const Route = createFileRoute("/characters")({
 ```
 
 動的ルートは `$` プレフィックスを使用：
+
 ```typescript
 // characters.$id.tsx
 export const Route = createFileRoute("/characters/$id")({

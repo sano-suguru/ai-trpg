@@ -52,20 +52,20 @@
 
 ### 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `shared` | `domain/session/` | Session, Replayドメインモデル |
-| `shared` | `schemas/session.ts` | セッションZodスキーマ |
-| `api` | `infrastructure/database/schema/sessions.ts` | sessionsテーブル |
-| `api` | `infrastructure/database/schema/replays.ts` | replaysテーブル |
-| `api` | `features/session/` | Session Feature Slice |
-| `api` | `services/generation/` | 生成パイプライン |
-| `api` | `services/generation/resonance.ts` | 共鳴スキャン |
-| `api` | `services/generation/plot.ts` | プロット生成 |
-| `api` | `services/generation/scene.ts` | シーン生成 |
-| `web` | `routes/sessions.new.tsx` | セッション作成ページ |
-| `web` | `routes/sessions.$id.tsx` | リプレイ表示ページ |
-| `web` | `components/session/` | セッション関連UI |
+| パッケージ | ファイル                                     | 変更内容                      |
+| ---------- | -------------------------------------------- | ----------------------------- |
+| `shared`   | `domain/session/`                            | Session, Replayドメインモデル |
+| `shared`   | `schemas/session.ts`                         | セッションZodスキーマ         |
+| `api`      | `infrastructure/database/schema/sessions.ts` | sessionsテーブル              |
+| `api`      | `infrastructure/database/schema/replays.ts`  | replaysテーブル               |
+| `api`      | `features/session/`                          | Session Feature Slice         |
+| `api`      | `services/generation/`                       | 生成パイプライン              |
+| `api`      | `services/generation/resonance.ts`           | 共鳴スキャン                  |
+| `api`      | `services/generation/plot.ts`                | プロット生成                  |
+| `api`      | `services/generation/scene.ts`               | シーン生成                    |
+| `web`      | `routes/sessions.new.tsx`                    | セッション作成ページ          |
+| `web`      | `routes/sessions.$id.tsx`                    | リプレイ表示ページ            |
+| `web`      | `components/session/`                        | セッション関連UI              |
 
 ### 生成パイプライン
 
@@ -135,25 +135,25 @@ interface Scene {
 
 ### API
 
-| エンドポイント | メソッド | 認証 | 説明 |
-|---------------|----------|------|------|
-| `session.create` | Mutation | 要 | セッション作成・生成開始 |
-| `session.get` | Query | 要 | セッション取得 |
-| `session.listMine` | Query | 要 | 自分のセッション一覧 |
-| `session.stream` | Subscription/SSE | 要 | 生成進捗ストリーム |
-| `replay.get` | Query | 不要 | リプレイ取得 |
+| エンドポイント     | メソッド         | 認証 | 説明                     |
+| ------------------ | ---------------- | ---- | ------------------------ |
+| `session.create`   | Mutation         | 要   | セッション作成・生成開始 |
+| `session.get`      | Query            | 要   | セッション取得           |
+| `session.listMine` | Query            | 要   | 自分のセッション一覧     |
+| `session.stream`   | Subscription/SSE | 要   | 生成進捗ストリーム       |
+| `replay.get`       | Query            | 不要 | リプレイ取得             |
 
 ### SSE進捗イベント
 
 ```typescript
 type GenerationEvent =
-  | { type: 'started' }
-  | { type: 'resonance_complete'; triggeredCount: number }
-  | { type: 'plot_complete' }
-  | { type: 'scene_generating'; sceneNumber: number; total: number }
-  | { type: 'scene_complete'; sceneNumber: number }
-  | { type: 'completed'; replayId: ReplayId }
-  | { type: 'failed'; error: string };
+  | { type: "started" }
+  | { type: "resonance_complete"; triggeredCount: number }
+  | { type: "plot_complete" }
+  | { type: "scene_generating"; sceneNumber: number; total: number }
+  | { type: "scene_complete"; sceneNumber: number }
+  | { type: "completed"; replayId: ReplayId }
+  | { type: "failed"; error: string };
 ```
 
 ## 実装手順
@@ -280,9 +280,10 @@ type GenerationEvent =
 ### 共鳴トリガー（ダンジョン側）
 
 `packages/shared/src/domain/dungeon/types.ts`:
+
 ```typescript
 export interface ResonanceTrigger {
-  readonly fragmentType: FragmentCategory;  // "origin" | "loss" | "mark" | "sin" | "quest" | "trait"
+  readonly fragmentType: FragmentCategory; // "origin" | "loss" | "mark" | "sin" | "quest" | "trait"
   readonly keywords: readonly string[];
   readonly effect: string;
 }
@@ -292,14 +293,15 @@ resonance: [
   {
     fragmentType: "loss",
     keywords: ["愛した人", "自らの手で", "家族"],
-    effect: "『娘』がこのキャラに特に反応する"
-  }
-]
+    effect: "『娘』がこのキャラに特に反応する",
+  },
+];
 ```
 
 ### キャラクター断片（共鳴マッチング対象）
 
 `packages/shared/src/domain/character/fragments.ts`:
+
 ```typescript
 export interface Fragment {
   readonly category: FragmentCategory;
@@ -317,6 +319,7 @@ fragments: {
 ### ダンジョン層構造
 
 `packages/shared/src/domain/dungeon/types.ts`:
+
 ```typescript
 export interface DungeonLayer {
   readonly name: string;
@@ -325,7 +328,7 @@ export interface DungeonLayer {
 }
 
 export interface DungeonCore {
-  readonly nature: CoreNature;  // "choice" | "confrontation" | "discovery" | "loss" | "liberation"
+  readonly nature: CoreNature; // "choice" | "confrontation" | "discovery" | "loss" | "liberation"
   readonly description: string;
   readonly possibleOutcomes: readonly string[];
 }
@@ -334,6 +337,7 @@ export interface DungeonCore {
 ### セッションエラー型
 
 `packages/shared/src/types/errors.ts`:
+
 ```typescript
 export interface SessionNotFoundError extends BaseError {
   readonly code: "SESSION_NOT_FOUND";
@@ -346,13 +350,14 @@ export interface SessionGenerationError extends BaseError {
 }
 
 // ファクトリ関数
-Errors.sessionNotFound(sessionId)
-Errors.sessionGeneration("plot", "プロット生成に失敗しました")
+Errors.sessionNotFound(sessionId);
+Errors.sessionGeneration("plot", "プロット生成に失敗しました");
 ```
 
 ### tRPCルーターパターン
 
 `apps/api/src/features/character/router.ts`:
+
 ```typescript
 // protectedProcedure を使用した認証必須エンドポイント
 create: protectedProcedure
@@ -372,6 +377,7 @@ create: protectedProcedure
 ### DBスキーマパターン
 
 `apps/api/src/infrastructure/database/schema/characters.ts`:
+
 ```typescript
 // JSONBカラムの使用パターン
 export const characters = pgTable("characters", {

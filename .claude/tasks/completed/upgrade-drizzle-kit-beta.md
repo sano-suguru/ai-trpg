@@ -26,10 +26,10 @@
 
 ## 影響範囲
 
-| パッケージ | ファイル | 変更内容 |
-|-----------|----------|----------|
-| `api` | `package.json` | drizzle-kit バージョン更新 |
-| root | `pnpm-lock.yaml` | 依存関係更新 |
+| パッケージ | ファイル         | 変更内容                   |
+| ---------- | ---------------- | -------------------------- |
+| `api`      | `package.json`   | drizzle-kit バージョン更新 |
+| root       | `pnpm-lock.yaml` | 依存関係更新               |
 
 ## Breaking Changes (v1.0.0-beta)
 
@@ -71,6 +71,7 @@
 ## ロールバック手順
 
 問題が発生した場合:
+
 ```bash
 pnpm --filter @ai-trpg/api add -D drizzle-kit@0.31.8
 pnpm install

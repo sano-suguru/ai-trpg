@@ -22,14 +22,10 @@ export const baseConfig = tseslint.config(
       "@typescript-eslint/no-non-null-assertion": "off",
       // Result型によるエラーハンドリングを推奨（neverthrow）
       // throw文を禁止し、Result型の使用を強制
+      // async関数内のthrowも検出するためallowToRejectPromises: false
+      // 外部ライブラリ連携で必要な場合はeslint-disableで明示的に回避
       "no-throw-literal": "error",
-      "functional/no-throw-statements": [
-        "error",
-        {
-          // Promiseをrejectするためのthrowは許可（外部ライブラリ連携用）
-          allowToRejectPromises: true,
-        },
-      ],
+      "functional/no-throw-statements": "error",
       // any型の使用を警告
       "@typescript-eslint/no-explicit-any": "warn",
       // console.log禁止（本番コードでの使用を防ぐ）

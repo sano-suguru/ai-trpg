@@ -164,3 +164,11 @@ export interface LLMApiKeys {
   readonly github?: string;
   readonly openrouter?: string;
 }
+
+/**
+ * Cloudflare AI Gateway設定
+ */
+export interface AIGatewayConfig {
+  readonly accountId: string;
+  readonly gatewayId: string;
+}

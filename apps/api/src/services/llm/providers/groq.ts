@@ -2,6 +2,7 @@
  * Groqプロバイダー
  *
  * Groq API（高速推論）を使用したLLMプロバイダー実装
+ * Cloudflare AI Gateway経由でアクセス可能
  */
 
 // Cloudflare Workers環境でweb fetch APIを使用
@@ -27,18 +28,73 @@ const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_TIMEOUT = 30000;
 
 // ========================================
+// Types
+// ========================================
+
+export interface GroqProviderConfig {
+  /** Groq APIキー */
+  readonly apiKey?: string;
+  /** Cloudflare AI Gateway設定（設定時はGateway経由でアクセス） */
+  readonly aiGateway?: {
+    readonly accountId: string;
+    readonly gatewayId: string;
+  };
+}
+
+// ========================================
+// Validation
+// ========================================
+
+/**
+ * Validate AI Gateway ID format
+ *
+ * Allows alphanumeric characters, hyphens, and underscores only.
+ * - Account ID: Typically 32-character hex string
+ * - Gateway ID: User-defined slug (e.g., "my-gateway", "prod_gateway")
+ *
+ * Max length of 64 characters to prevent abuse.
+ */
+const isValidGatewayId = (id: string): boolean =>
+  /^[a-zA-Z0-9_-]+$/.test(id) && id.length <= 64;
+
+// ========================================
 // Provider Implementation
 // ========================================
 
 /**
+ * AI Gateway経由のbaseURLを生成
+ *
+ * 不正な設定値の場合はundefinedを返し、
+ * 直接Groq APIへのアクセスにフォールバックする
+ */
+function buildBaseURL(
+  config: GroqProviderConfig["aiGateway"],
+): string | undefined {
+  if (!config) return undefined;
+
+  const { accountId, gatewayId } = config;
+
+  // Whitelist approach: only allow safe characters
+  if (!isValidGatewayId(accountId) || !isValidGatewayId(gatewayId)) {
+    return undefined;
+  }
+
+  return `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/groq`;
+}
+
+/**
  * Groqプロバイダーを作成
  *
- * @param apiKey Groq APIキー
+ * @param config プロバイダー設定（APIキーとオプションでAI Gateway設定）
  */
-export function createGroqProvider(apiKey?: string): LLMProvider {
+export function createGroqProvider(config: GroqProviderConfig): LLMProvider {
+  const { apiKey, aiGateway } = config;
+  const baseURL = buildBaseURL(aiGateway);
+
   const client = apiKey
     ? new Groq({
         apiKey,
+        baseURL,
       })
     : null;
 

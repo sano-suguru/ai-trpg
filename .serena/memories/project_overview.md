@@ -1,6 +1,7 @@
 # AI-TRPG Project Overview
 
 ## Purpose
+
 AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG replay game. Players create characters, form parties, select dungeons, and the AI generates narrative sessions as TRPG replay text. The game emphasizes narrative and lore over numerical stats.
 
 **Core Concept**: "Set up a TRPG session, let AI play it out, harvest the story"
@@ -8,6 +9,7 @@ AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG 
 ## Tech Stack
 
 ### Frontend (apps/web)
+
 - React 19 + TypeScript + Vite
 - TanStack Router (file-based routing)
 - TanStack Query + tRPC client
@@ -16,17 +18,20 @@ AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG 
 - shadcn/ui components
 
 ### Backend (apps/api)
+
 - Hono on Cloudflare Workers
 - tRPC for type-safe API
 - Drizzle ORM
 - Supabase (PostgreSQL)
 
 ### Shared (packages/shared)
+
 - Domain models and primitives
 - Zod schemas
 - neverthrow Result types
 
 ### LLM Integration
+
 - Multi-provider: Gemini, Groq, GitHub Models
 - Abstraction layer with fallback strategy
 
@@ -48,11 +53,13 @@ ai-trpg/
 ## Implemented Features
 
 ### Authentication
+
 - Supabase Auth integration
 - Protected routes with login redirect
 - Session management
 
 ### Character Creation
+
 - 4-step wizard: Fragment → Biography (AI) → Name/Directives → Confirm
 - Fragment selection (6 categories: origin, loss, mark, sin, quest, trait)
 - AI biography generation with LLM service (Groq/Gemini fallback)
@@ -61,14 +68,17 @@ ai-trpg/
 - Character save with lending settings
 
 ### Master Data APIs
+
 - `fragment.list` - Get all fragments by category
 - `directive.list` - Get all directives by situation
 
 ## Dependency Rules
+
 - `apps/web` and `apps/api` depend on `packages/shared`
 - `apps/web` and `apps/api` must NOT depend on each other
 - `packages/shared` has no internal dependencies
 
 ## Package Manager
+
 - pnpm 8.15.6
 - Turborepo for monorepo orchestration

@@ -106,13 +106,23 @@ export interface LLMRateLimitError extends BaseError {
   readonly retryAfter?: number;
 }
 
+export interface RateLimitError extends BaseError {
+  readonly code: "RATE_LIMIT";
+  readonly endpoint: string;
+  readonly retryAfter?: number;
+}
+
 export interface LLMGenerationError extends BaseError {
   readonly code: "LLM_GENERATION_ERROR";
   readonly provider: string;
   readonly stage: "plot" | "scene" | "character";
 }
 
-export type AIError = LLMError | LLMRateLimitError | LLMGenerationError;
+export type AIError =
+  | LLMError
+  | LLMRateLimitError
+  | LLMGenerationError
+  | RateLimitError;
 
 // ========================================
 // Game Domain Errors
@@ -299,6 +309,15 @@ export const Errors = {
     provider,
     stage,
     message: message ?? `${stage}の生成に失敗しました（${provider}）`,
+  }),
+
+  rateLimit: (endpoint: string, retryAfter?: number): RateLimitError => ({
+    code: "RATE_LIMIT",
+    endpoint,
+    retryAfter,
+    message: retryAfter
+      ? `レート制限に達しました。${retryAfter}秒後に再試行してください`
+      : "レート制限に達しました",
   }),
 
   // Character

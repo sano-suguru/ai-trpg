@@ -5,39 +5,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Workflow Rules
 
 ### CLI First Approach
+
 - Always use CLI commands when available instead of manually writing config files
 - Use `pnpm init`, `pnpm create`, `pnpm add`, etc. instead of hand-writing package.json
 - Check `--help` for CLI options before attempting workarounds or manual creation
 
 ### Documentation First
+
 - Always check Context7 for up-to-date documentation before using tools or libraries
 - Never rely on assumptions or outdated knowledge - verify with official docs
 - Use official templates and examples when available
 
 ### Code Quality First
+
 - Run `pnpm lint -- --fix` and `pnpm typecheck` after making changes
 - `pnpm lint -- --fix` runs both ESLint and Prettier (auto-format)
 - Fix ALL errors AND warnings before considering a task complete
 - Treat warnings as errors - do not ignore or defer them
 
 ### Verification Required (No Vibe Coding)
+
 - "I implemented it" is NOT completion - verify that it actually works
 - Open browser with Playwright MCP, interact with the feature, and take screenshots
 - Create and run E2E tests, review the recorded video
 - Prohibited: mock implementations, slideshow-style tests (goto-only navigation), hardcoded values
 
 ### Git Commit Rules
+
 - Do NOT add Claude signature or Co-Authored-By footer to commit messages
 - Use conventional commits format: `type(scope): message`
 - Keep commit messages concise and in Japanese or English (match the project context)
 
 ### Ultrathink (Deep Reasoning)
+
 - Always use extended thinking for complex tasks - design before implementation
 - Compare multiple approaches and explicitly state trade-offs
 - State assumptions explicitly and ask for clarification when uncertain
 - Analyze impact on existing code when making architecture changes or adding new features
 
 ### Sequential Thinking MCP (Complex Problem Solving)
+
 - Use the `sequential-thinking` MCP tool for complex problems or design decisions
 - Particularly effective for:
   - Breaking down multi-step problems
@@ -74,6 +81,7 @@ packages/
 ```
 
 **Dependency Rules**:
+
 - `apps/web` and `apps/api` depend on `packages/shared`
 - `apps/web` and `apps/api` must NOT have runtime dependencies on each other
 - Exception: `apps/web` may use `import type` to reference `AppRouter` from `apps/api` (tRPC type safety)
@@ -89,10 +97,13 @@ pnpm install
 pnpm dev
 
 # Start Supabase local
-supabase start
+npx supabase start
 
-# Run database migrations
-supabase db push
+# Push schema changes to database (Drizzle ORM)
+pnpm --filter @ai-trpg/api db:push
+
+# Open Drizzle Studio (DB GUI)
+pnpm --filter @ai-trpg/api db:studio
 
 # Build all packages
 pnpm build
@@ -112,33 +123,60 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 ## Architecture Decisions
 
 ### Functional Domain Modeling (FDM)
+
 - **Branded Types**: Nominal typing for type-safe IDs (`UserId`, `CharacterId`, etc.) in `shared/domain/primitives/`
 - **Smart Constructors**: All domain objects created via factory functions that return `Result<T, ValidationError>`
 - **Immutable by default**: All domain types use `readonly` modifiers
 - **Discriminated Unions**: Character states, errors represented as tagged unions
 
 ### Vertical Slice Architecture
+
 - Feature-based organization in `api/features/{domain}/`
 - Each feature contains: `router.ts`, `repository.ts`, `mapper.ts`, `useCases/`
 - Dependencies injected via function parameters (no DI container)
 - Clear separation: UseCase → Repository (port) → DB Adapter
 
 ### Domain Model Location
-| Layer | Location |
-|-------|----------|
-| Domain primitives (IDs, branded types) | `shared/domain/primitives/` |
-| Domain entities & value objects | `shared/domain/{entity}/` |
-| Zod schemas (API input validation) | `shared/schemas/` |
-| Feature slices (API) | `api/features/{domain}/` |
-| DB schema (Drizzle) | `api/infrastructure/database/schema/` |
+
+| Layer                                  | Location                              |
+| -------------------------------------- | ------------------------------------- |
+| Domain primitives (IDs, branded types) | `shared/domain/primitives/`           |
+| Domain entities & value objects        | `shared/domain/{entity}/`             |
+| Zod schemas (API input validation)     | `shared/schemas/`                     |
+| Feature slices (API)                   | `api/features/{domain}/`              |
+| DB schema (Drizzle)                    | `api/infrastructure/database/schema/` |
 
 ### Data Model
+
 - Normalized tables for users, characters, dungeons, sessions
 - JSONB for flexible nested data (fragments, directives, dungeon layers, session history)
-- Row-Level Security (RLS) required on all tables
 - Soft delete not used - physical delete with CASCADE
 
+### Database Access & Security
+
+- **Connection**: Backend API connects directly via `postgres.js` (not through Supabase PostgREST)
+- **Auth/Authz**: Handled by tRPC `protectedProcedure` middleware
+- **RLS**: Not used (direct connection bypasses RLS)
+- For defense-in-depth, consider dedicated DB user + RLS in production
+
+### Database Schema Changes
+
+Steps for adding a new table:
+
+1. **Create Drizzle schema definition**
+   - Create file in `apps/api/src/infrastructure/database/schema/`
+   - Add export to `index.ts`
+
+2. **Push to database**
+
+   ```bash
+   pnpm --filter @ai-trpg/api db:push
+   ```
+
+**Important**: Use `drizzle-kit push`, NOT `supabase db push`
+
 ### API Design
+
 - tRPC for type-safe client-server communication
 - `publicProcedure` for unauthenticated endpoints
 - `protectedProcedure` for authenticated endpoints
@@ -146,12 +184,14 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Routers in `api/features/{domain}/router.ts`
 
 ### LLM Integration
+
 - Multi-provider abstraction with fallback strategy
 - Gemini: plot structure generation
 - Groq: scene text generation (fast)
 - Templates in `api/services/llm/prompts/`
 
 ### Error Handling
+
 - Use `Result<T, E>` and `ResultAsync<T, E>` from neverthrow - **NEVER use try-catch for control flow**
 - Service layer returns Result types
 - API handlers convert to HTTP responses using `toErrorResponse()`
@@ -165,35 +205,39 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 ## Code Conventions
 
 ### Naming
-| Target | Convention | Example |
-|--------|------------|---------|
-| Directories | `kebab-case` | `character-sheet/` |
-| TS files | `camelCase.ts` | `characterStore.ts` |
-| React components | `PascalCase.tsx` | `CharacterCard.tsx` |
-| Types/Interfaces | `PascalCase` | `Character` |
-| Functions/Variables | `camelCase` | `createCharacter()` |
-| Constants | `UPPER_SNAKE_CASE` | `MAX_PARTY_SIZE` |
+
+| Target              | Convention         | Example             |
+| ------------------- | ------------------ | ------------------- |
+| Directories         | `kebab-case`       | `character-sheet/`  |
+| TS files            | `camelCase.ts`     | `characterStore.ts` |
+| React components    | `PascalCase.tsx`   | `CharacterCard.tsx` |
+| Types/Interfaces    | `PascalCase`       | `Character`         |
+| Functions/Variables | `camelCase`        | `createCharacter()` |
+| Constants           | `UPPER_SNAKE_CASE` | `MAX_PARTY_SIZE`    |
 
 ### File Placement
-| Type | Location |
-|------|----------|
-| Domain models | `shared/domain/{entity}/` |
-| Domain primitives (IDs) | `shared/domain/primitives/` |
-| Error types | `shared/types/` |
-| Zod schemas | `shared/schemas/` |
-| Master data (game constants) | `shared/constants/` |
-| Test fixtures (seed metadata) | `shared/fixtures/` |
-| Seed data (dev/demo samples) | `api/scripts/data/` |
-| UI components | `web/components/{domain}/` |
-| Feature slices | `api/features/{domain}/` |
-| DB schema | `api/infrastructure/database/schema/` |
+
+| Type                          | Location                              |
+| ----------------------------- | ------------------------------------- |
+| Domain models                 | `shared/domain/{entity}/`             |
+| Domain primitives (IDs)       | `shared/domain/primitives/`           |
+| Error types                   | `shared/types/`                       |
+| Zod schemas                   | `shared/schemas/`                     |
+| Master data (game constants)  | `shared/constants/`                   |
+| Test fixtures (seed metadata) | `shared/fixtures/`                    |
+| Seed data (dev/demo samples)  | `api/scripts/data/`                   |
+| UI components                 | `web/components/{domain}/`            |
+| Feature slices                | `api/features/{domain}/`              |
+| DB schema                     | `api/infrastructure/database/schema/` |
 
 ### Import Style
+
 - **No file extensions** in import statements - bundler handles resolution
 - Use `import { foo } from "./bar"` not `import { foo } from "./bar.js"`
 - This project uses `moduleResolution: "Bundler"` (Vite/esbuild)
 
 ### Prohibited
+
 - Circular dependencies
 - Deep relative paths (`../../../`) - use `@/` alias
 - `any` type - use `unknown` with type guards
@@ -206,30 +250,43 @@ pnpm --filter @ai-trpg/web e2e:ui       # UI mode
 - Ad-hoc naming for backward compatibility - rename existing code instead of adding awkwardly named alternatives (e.g., don't add `getPublic` when you should rename `get` to `getMine`)
 
 ### ESLint Escape Hatches
+
 When `throw` is unavoidable, use one of these approaches:
+
 - **Router files** (`**/router.ts`, `**/trpc/**/*.ts`): Automatically exempt for TRPCError
 - **Test files** (`**/*.spec.ts`, `**/*.test.ts`, `**/e2e/**/*.ts`): Automatically exempt
 - **Scripts** (`**/scripts/**/*.ts`): Automatically exempt
 - **Entry point checks**: Use inline disable comment with explanation
   ```typescript
-  // アプリケーション起動時の必須環境変数チェック
+  // Required env var check at application startup
   // eslint-disable-next-line functional/no-throw-statements
   throw new Error("Missing required env var");
   ```
+- **External library integration**: When wrapping external libraries that require throw
+  ```typescript
+  // External library requires throw, use eslint-disable to bypass
+  // eslint-disable-next-line functional/no-throw-statements
+  throw new ExternalLibraryError(...)
+  ```
+
+**Note**: `functional/no-throw-statements` detects throw statements in async functions as well. Only use `eslint-disable` when absolutely necessary for external library integration.
 
 ## Game Domain Concepts
 
 ### Character System
+
 - Characters defined by "fragments" (断片) not stats: origin, loss, mark, sin, quest, trait
 - "Directives" (行動指針) determine behavior in situations: danger, ally_in_peril, moral_choice, unknown
 - Lending settings: `all` (full access), `safe` (no death), `private` (no borrowing)
 
 ### Dungeon System
+
 - Dungeons have layers with atmosphere, events, and a "core" (climax)
 - "Resonance" (共鳴) triggers special events when character fragments match dungeon themes
 - Trial types: combat, exploration, puzzle, moral_choice, inner_confrontation, survival, negotiation
 
 ### Session Generation Pipeline
+
 1. Resonance scan (local) - match character fragments to dungeon triggers
 2. Plot generation (LLM) - create story structure in YAML
 3. Scene generation (LLM) - write 400-600 char scenes
@@ -250,22 +307,24 @@ When `throw` is unavoidable, use one of these approaches:
 
 ### Slash Commands
 
-| コマンド | 用途 |
-|----------|------|
+| コマンド                 | 用途                     |
+| ------------------------ | ------------------------ |
 | `/implement <task-file>` | タスク仕様に基づいて実装 |
-| `/review <target>` | コードレビュー |
-| `/fix <issue>` | レビュー指摘・エラー修正 |
-| `/quality-check [scope]` | lint/typecheck/test実行 |
-| `/sync-claude-md` | CLAUDE.mdを現状に同期 |
+| `/review <target>`       | コードレビュー           |
+| `/fix <issue>`           | レビュー指摘・エラー修正 |
+| `/quality-check [scope]` | lint/typecheck/test実行  |
+| `/sync-claude-md`        | CLAUDE.mdを現状に同期    |
 
 ### Task Management
 
 **タスク仕様ファイル:**
+
 - 場所: `.claude/tasks/`
 - テンプレート: `.claude/tasks/TEMPLATE.md`
 - 命名: `feature-xxx.md`, `fix-xxx.md`, `refactor-xxx.md`
 
 **ワークフロー:**
+
 1. タスク仕様を `.claude/tasks/feature-xxx.md` に記述
 2. `/implement .claude/tasks/feature-xxx.md` で実装
 3. `/review` でレビュー
@@ -275,6 +334,7 @@ When `throw` is unavoidable, use one of these approaches:
 ### Module Documentation
 
 各モジュールのREADMEを参照してコンテキストを把握:
+
 - [packages/shared/README.md](packages/shared/README.md) - 共有パッケージ
 - [apps/api/README.md](apps/api/README.md) - バックエンドAPI
 - [apps/web/README.md](apps/web/README.md) - フロントエンド
@@ -296,6 +356,7 @@ git worktree remove ../ai-trpg-feature-xxx
 ```
 
 メリット:
+
 - モジュール間のコンテキスト分離
 - 並列でClaude実行可能
 - コンフリクト最小化

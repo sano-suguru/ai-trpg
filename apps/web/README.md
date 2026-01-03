@@ -29,17 +29,17 @@ src/
 
 ## 技術スタック
 
-| 技術 | 用途 |
-|------|------|
-| React 19 | UIライブラリ |
-| TypeScript | 型安全性 |
-| Vite | ビルドツール |
-| Tailwind CSS v4 | スタイリング |
+| 技術            | 用途               |
+| --------------- | ------------------ |
+| React 19        | UIライブラリ       |
+| TypeScript      | 型安全性           |
+| Vite            | ビルドツール       |
+| Tailwind CSS v4 | スタイリング       |
 | TanStack Router | 型安全ルーティング |
-| TanStack Query | データフェッチング |
-| tRPC Client | API通信（型安全） |
-| shadcn/ui | UIコンポーネント |
-| Zustand | 状態管理（将来用）|
+| TanStack Query  | データフェッチング |
+| tRPC Client     | API通信（型安全）  |
+| shadcn/ui       | UIコンポーネント   |
+| Zustand         | 状態管理（将来用） |
 
 ## コマンド
 
@@ -66,10 +66,10 @@ pnpm preview
 
 ```css
 /* style.css のカラーパレット */
---background: 0 0% 6%;        /* 深い闇 */
---foreground: 30 10% 90%;     /* 灰がかった白 */
---primary: 30 15% 50%;        /* 燻んだ琥珀 */
---destructive: 0 60% 40%;     /* 乾いた血 */
+--background: 0 0% 6%; /* 深い闇 */
+--foreground: 30 10% 90%; /* 灰がかった白 */
+--primary: 30 15% 50%; /* 燻んだ琥珀 */
+--destructive: 0 60% 40%; /* 乾いた血 */
 ```
 
 - ダークモードがデフォルト
@@ -124,7 +124,7 @@ export const Route = createFileRoute("/characters")({
 ```tsx
 import { Link } from "@tanstack/react-router";
 
-<Link to="/characters">キャラクター</Link>
+<Link to="/characters">キャラクター</Link>;
 ```
 
 ## 状態管理
@@ -138,7 +138,7 @@ import { useQuery } from "@tanstack/react-query";
 function CharactersPage() {
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
-    trpc.character.listBorrowable.queryOptions()
+    trpc.character.listBorrowable.queryOptions(),
   );
   // ...
 }

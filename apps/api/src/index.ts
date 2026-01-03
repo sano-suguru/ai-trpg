@@ -76,6 +76,7 @@ app.use("/trpc/*", async (c, next) => {
 
   // ルーターを作成（依存性注入）
   const appRouter = createAppRouter({
+    db,
     characterRepository,
     dungeonRepository,
     generateId: () => crypto.randomUUID(),
