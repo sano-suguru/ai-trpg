@@ -2,10 +2,13 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 4, // 要素待機方式で並列実行可能
+  // CI: 1ワーカー（Mailpit認証の競合回避）
+  // ローカル: 2ワーカー（多少のフレーキー許容）
+  workers: process.env.CI ? 1 : 2,
   timeout: 30000, // 各テストのタイムアウト（デフォルト30秒）
   expect: {
     timeout: 15000, // expectのデフォルトタイムアウト

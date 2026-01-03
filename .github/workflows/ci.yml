@@ -88,6 +88,8 @@ jobs:
           echo "DATABASE_URL=$DATABASE_URL" > apps/api/.dev.vars
           echo "SUPABASE_URL=$SUPABASE_URL" >> apps/api/.dev.vars
           echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> apps/api/.dev.vars
+          # E2Eテスト用: LLMモックを有効化（実際のAPIキー不要）
+          echo "USE_MOCK_LLM=true" >> apps/api/.dev.vars
 
       - name: Create .env for Vite
         # Viteはimport.meta.envを.envファイルから読み込むため、GITHUB_ENVでは不十分
@@ -97,9 +99,6 @@ jobs:
 
       - name: Push database schema
         run: pnpm --filter @ai-trpg/api db:push
-
-      - name: Seed test data
-        run: pnpm --filter @ai-trpg/api seed
 
       - name: Debug - Check environment and services
         run: |

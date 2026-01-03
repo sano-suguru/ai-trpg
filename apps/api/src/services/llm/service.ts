@@ -22,6 +22,7 @@ import {
   createGroqProvider,
   createGeminiProvider,
   createOpenRouterProvider,
+  createMockProvider,
 } from "./providers";
 import {
   BIOGRAPHY_SYSTEM_PROMPT,
@@ -68,6 +69,8 @@ export interface CreateLLMServiceOptions {
   readonly config?: Partial<LLMServiceConfig>;
   /** Cloudflare AI Gateway設定（Groqアクセスに必須） */
   readonly aiGateway: AIGatewayConfig;
+  /** E2Eテスト用: LLMモックを使用するか */
+  readonly useMockLLM?: boolean;
 }
 
 /**
@@ -76,12 +79,12 @@ export interface CreateLLMServiceOptions {
  * @param options サービス作成オプション
  */
 export function createLLMService(options: CreateLLMServiceOptions): LLMService {
-  const { apiKeys, config = {}, aiGateway } = options;
+  const { apiKeys, config = {}, aiGateway, useMockLLM = false } = options;
 
-  const fullConfig: LLMServiceConfig = {
-    ...DEFAULT_CONFIG,
-    ...config,
-  };
+  // モックモード時はモックプロバイダーのみ使用
+  const effectiveConfig: LLMServiceConfig = useMockLLM
+    ? { ...DEFAULT_CONFIG, ...config, providers: ["mock"] }
+    : { ...DEFAULT_CONFIG, ...config };
 
   // プロバイダーを初期化
   // NOTE: AI GatewayはGroqのみ対応。理由:
@@ -89,24 +92,32 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
   // - Gemini/OpenRouterは各SDKのbaseURL変更サポート状況の調査が必要
   // - 必要に応じて将来拡張可能（各プロバイダーのconfigにaiGatewayを追加）
   const providers: Map<string, LLMProvider> = new Map();
-  providers.set("openrouter", createOpenRouterProvider(apiKeys.openrouter));
-  providers.set(
-    "groq",
-    createGroqProvider({
-      apiKey: apiKeys.groq,
-      aiGateway,
-    }),
-  );
-  providers.set("gemini", createGeminiProvider(apiKeys.gemini));
+
+  if (useMockLLM) {
+    // モックモード: モックプロバイダーのみ登録
+    providers.set("mock", createMockProvider());
+    logger.info("Using mock LLM provider for testing");
+  } else {
+    // 本番モード: 実際のプロバイダーを登録
+    providers.set("openrouter", createOpenRouterProvider(apiKeys.openrouter));
+    providers.set(
+      "groq",
+      createGroqProvider({
+        apiKey: apiKeys.groq,
+        aiGateway,
+      }),
+    );
+    providers.set("gemini", createGeminiProvider(apiKeys.gemini));
+  }
 
   // 利用可能なプロバイダーを優先順位順に取得
   const getAvailableProviders = (): LLMProvider[] => {
-    const available = fullConfig.providers
+    const available = effectiveConfig.providers
       .map((name) => providers.get(name))
       .filter((p): p is LLMProvider => p !== undefined && p.isAvailable());
 
     logger.debug("Available providers", {
-      configured: fullConfig.providers,
+      configured: effectiveConfig.providers,
       available: available.map((p) => p.name),
     });
 
@@ -124,7 +135,7 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
 
     if (availableProviders.length === 0) {
       logger.error("No available providers", {
-        configured: fullConfig.providers,
+        configured: effectiveConfig.providers,
       });
       return errAsync(
         Errors.llm("none", "利用可能なLLMプロバイダーがありません"),
@@ -156,7 +167,7 @@ export function createLLMService(options: CreateLLMServiceOptions): LLMService {
       return provider
         .generate(prompt, {
           systemPrompt,
-          timeout: fullConfig.defaultTimeout,
+          timeout: effectiveConfig.defaultTimeout,
         })
         .map((result) => {
           logger.info("Generation succeeded", {
