@@ -6,7 +6,7 @@
  * テストの安定性を向上させる。
  */
 
-import { createClient, type Session } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 // ========================================
 // 環境設定（環境変数優先、ローカルデフォルトにフォールバック）
@@ -49,17 +49,6 @@ function createAdminClient() {
   });
 }
 
-/**
- * 通常のクライアントを作成（Anon Key を使用）
- */
-function createAnonClient() {
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-}
 
 /**
  * テストユーザーを作成（Admin API使用）
@@ -89,70 +78,6 @@ export async function createTestUser(workerId: number): Promise<void> {
       throw new Error(`Failed to create test user: ${createError.message}`);
     }
   }
-}
-
-/**
- * テストユーザーを作成してセッションを取得
- *
- * @param workerId - Playwright の parallelIndex（ワーカーごとにユニーク）
- * @returns セッション情報
- * @deprecated ブラウザ内認証を推奨。createTestUser + getAuthConfig を使用してください
- */
-export async function createTestSession(workerId: number): Promise<Session> {
-  await createTestUser(workerId);
-
-  const email = `e2e-worker${workerId}@test.local`;
-  const anonClient = createAnonClient();
-  const { data, error: signInError } = await anonClient.auth.signInWithPassword(
-    {
-      email,
-      password: TEST_PASSWORD,
-    },
-  );
-
-  if (signInError || !data.session) {
-    throw new Error(
-      `Failed to sign in test user: ${signInError?.message ?? "No session returned"}`,
-    );
-  }
-
-  return data.session;
-}
-
-/**
- * Supabase の localStorage キーを生成
- *
- * Supabase のキー形式: sb-{host}-auth-token
- * 例: http://127.0.0.1:54321 → sb-127.0.0.1-auth-token
- */
-function getStorageKey(): string {
-  const url = new URL(SUPABASE_URL);
-  return `sb-${url.hostname}-auth-token`;
-}
-
-/**
- * セッションデータを取得（localStorage に注入する形式）
- *
- * @param session - Supabase のセッション
- * @returns localStorage に保存するセッションデータ
- */
-export function getSessionData(session: Session): {
-  storageKey: string;
-  sessionData: object;
-} {
-  const storageKey = getStorageKey();
-
-  // localStorage に注入するデータ形式
-  const sessionData = {
-    access_token: session.access_token,
-    refresh_token: session.refresh_token,
-    expires_in: session.expires_in,
-    expires_at: session.expires_at,
-    token_type: session.token_type,
-    user: session.user,
-  };
-
-  return { storageKey, sessionData };
 }
 
 /** Web アプリの URL（エクスポート用） */
