@@ -13,16 +13,18 @@
 
 ## File Placement
 
-| Type                    | Location                              |
-| ----------------------- | ------------------------------------- |
-| Domain models           | `shared/domain/{entity}/`             |
-| Domain primitives (IDs) | `shared/domain/primitives/`           |
-| Error types             | `shared/types/`                       |
-| Zod schemas             | `shared/schemas/`                     |
-| Master data             | `shared/constants/`                   |
-| UI components           | `web/components/{domain}/`            |
-| Feature slices          | `api/features/{domain}/`              |
-| DB schema               | `api/infrastructure/database/schema/` |
+| Type                          | Location                              |
+| ----------------------------- | ------------------------------------- |
+| Domain models                 | `shared/domain/{entity}/`             |
+| Domain primitives (IDs)       | `shared/domain/primitives/`           |
+| Error types                   | `shared/types/`                       |
+| Zod schemas                   | `shared/schemas/`                     |
+| Master data (game constants)  | `shared/constants/`                   |
+| Test fixtures (seed metadata) | `shared/fixtures/`                    |
+| Seed data (dev/demo samples)  | `api/scripts/data/`                   |
+| UI components                 | `web/components/{domain}/`            |
+| Feature slices                | `api/features/{domain}/`              |
+| DB schema                     | `api/infrastructure/database/schema/` |
 
 ## Import Style
 
@@ -49,10 +51,11 @@
 ### Error Handling (neverthrow)
 
 - Use `Result<T, E>` and `ResultAsync<T, E>` - NEVER try-catch for control flow
-- Use `Errors.*` factory functions
+- Use `Errors.*` factory functions to create errors
 - Wrap external promises with `wrapPromise()`, `wrapDbOperation()`, `wrapExternalCall()`
 - Use `fromNullable()` for nullable values
 - Use `tryCatch()` only at boundaries with external libraries
+- Exception: CLI scripts and entry points may use try-catch for top-level error handling
 
 ## API Naming Conventions (tRPC)
 
@@ -62,16 +65,23 @@
 | `getMine` / `listMine`         | Required     | Own data retrieval    |
 | `create` / `update` / `delete` | Required     | Data modification     |
 
-**Prohibited**: Ad-hoc naming for backward compatibility. Rename existing code instead of adding awkwardly named alternatives (e.g., don't add `getPublic` when you should rename `get` to `getMine`).
-
 ## Prohibited Practices
 
 - Circular dependencies
 - Deep relative paths - use `@/` alias
 - `any` type - use `unknown` with type guards
-- `console.log` in production code
-- `try-catch` for control flow
-- `throw` statements - return `err()` instead
-- Ignoring lint warnings
-- Dead code for "backward compatibility"
-- File extensions in imports
+- `console.log` in production code (ESLint `no-console` enforced)
+- `try-catch` for control flow - use Result types
+- `throw` statements - return `err()` instead (ESLint `functional/no-throw-statements` enforced)
+- Ignoring lint warnings - always fix them
+- Dead code for "backward compatibility" - delete unused code immediately
+- File extensions (`.js`/`.ts`) in import statements
+- Ad-hoc naming for backward compatibility - rename existing code instead
+
+## ESLint Escape Hatches
+
+When `throw` is unavoidable:
+- Router files (`**/router.ts`, `**/trpc/**/*.ts`): Automatically exempt for TRPCError
+- Test files (`**/*.spec.ts`, `**/*.test.ts`, `**/e2e/**/*.ts`): Automatically exempt
+- Scripts (`**/scripts/**/*.ts`): Automatically exempt
+- Entry point checks: Use inline disable comment with explanation

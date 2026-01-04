@@ -10,6 +10,9 @@ pnpm lint -- --fix
 
 # 2. Type check
 pnpm typecheck
+
+# 3. Check code duplication (for refactoring tasks)
+pnpm similarity
 ```
 
 ## Quality Requirements
@@ -37,3 +40,11 @@ pnpm typecheck
 - [ ] Follows file placement conventions
 - [ ] No deep relative imports (use `@/` alias)
 - [ ] No `any` type usage
+- [ ] No code duplication (verified with `pnpm similarity`)
+
+## Verification Required (No Vibe Coding)
+
+- "I implemented it" is NOT completion - verify that it actually works
+- Open browser with Playwright MCP, interact with the feature, take screenshots
+- Create and run E2E tests, review the recorded video
+- Prohibited: mock implementations, slideshow-style tests, hardcoded values
