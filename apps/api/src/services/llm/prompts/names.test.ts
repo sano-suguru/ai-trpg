@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { buildNamesPrompt, parseNamesResponse } from "./names";
+import {
+  buildNamesPrompt,
+  NAMES_SYSTEM_PROMPT,
+  parseNamesResponse,
+} from "./names";
 
 describe("names prompt", () => {
+  describe("NAMES_SYSTEM_PROMPT", () => {
+    it("should be a non-empty string containing key instructions", () => {
+      expect(NAMES_SYSTEM_PROMPT.length).toBeGreaterThan(100);
+      expect(NAMES_SYSTEM_PROMPT).toContain("灰暦の世界");
+      expect(NAMES_SYSTEM_PROMPT).toContain("セキュリティルール");
+    });
+  });
+
   describe("buildNamesPrompt", () => {
     it("should build prompt with biography and fragments", () => {
       // NameGenerationInputはBiographyGenerationInputを要求するが、
@@ -137,6 +149,102 @@ a
       const names = parseNamesResponse(response);
 
       expect(names).toEqual(["灰村のセド", "朽ちた塔のエレン"]);
+    });
+
+    it("should keep exactly 2-character names", () => {
+      const response = `灰村のセド
+ab
+セド`;
+
+      const names = parseNamesResponse(response);
+
+      // "ab" and "セド" are exactly 2 characters, should be kept
+      expect(names).toEqual(["灰村のセド", "ab", "セド"]);
+    });
+
+    it("should trim whitespace from lines", () => {
+      const response = `  灰村のセド
+	朽ちた塔のエレン
+   鍛冶師の娘リラ   `;
+
+      const names = parseNamesResponse(response);
+
+      expect(names).toEqual([
+        "灰村のセド",
+        "朽ちた塔のエレン",
+        "鍛冶師の娘リラ",
+      ]);
+    });
+
+    it("should handle bullet without trailing space", () => {
+      // Test: /^[-・*•]\s*/ with \s* allowing zero spaces
+      const response = `-灰村のセド
+・朽ちた塔のエレン
+*鍛冶師の娘リラ`;
+
+      const names = parseNamesResponse(response);
+
+      expect(names).toEqual([
+        "灰村のセド",
+        "朽ちた塔のエレン",
+        "鍛冶師の娘リラ",
+      ]);
+    });
+
+    it("should only remove bullet at start of line", () => {
+      // Test: ^ anchor - bullet mid-string should be preserved
+      const response = `灰村-のセド
+朽ちた・塔のエレン`;
+
+      const names = parseNamesResponse(response);
+
+      expect(names).toEqual(["灰村-のセド", "朽ちた・塔のエレン"]);
+    });
+
+    it("should handle double-digit numbered lists", () => {
+      // Test: \d+ matching multiple digits
+      const response = `10. 灰村のセド
+11) 朽ちた塔のエレン
+123. 鍛冶師の娘リラ`;
+
+      const names = parseNamesResponse(response);
+
+      expect(names).toEqual([
+        "灰村のセド",
+        "朽ちた塔のエレン",
+        "鍛冶師の娘リラ",
+      ]);
+    });
+
+    it("should handle numbered list without trailing space", () => {
+      // Test: \s* allowing zero spaces after number
+      const response = `1.灰村のセド
+2)朽ちた塔のエレン`;
+
+      const names = parseNamesResponse(response);
+
+      expect(names).toEqual(["灰村のセド", "朽ちた塔のエレン"]);
+    });
+
+    it("should only remove number at start of line", () => {
+      // Test: ^ anchor - number mid-string should be preserved
+      const response = `灰村の1番セド
+朽ちた2.塔のエレン`;
+
+      const names = parseNamesResponse(response);
+
+      expect(names).toEqual(["灰村の1番セド", "朽ちた2.塔のエレン"]);
+    });
+
+    it("should only remove quotes at boundaries", () => {
+      // Test: ^ and $ anchors - quotes mid-string should be preserved
+      const response = `灰村の「セド」様
+朽ちた"塔"のエレン`;
+
+      const names = parseNamesResponse(response);
+
+      // Mid-string quotes should be preserved
+      expect(names).toEqual(["灰村の「セド」様", '朽ちた"塔"のエレン']);
     });
 
     it("should limit to 10 names", () => {

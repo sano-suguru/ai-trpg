@@ -122,6 +122,16 @@ pnpm similarity
 pnpm --filter @ai-trpg/web e2e          # headless
 pnpm --filter @ai-trpg/web e2e:headed   # with browser
 pnpm --filter @ai-trpg/web e2e:ui       # UI mode
+
+# Test coverage
+pnpm --filter @ai-trpg/shared test:coverage  # shared: coverage report
+pnpm --filter @ai-trpg/api test:coverage     # api: coverage report
+
+# Mutation testing
+pnpm --filter @ai-trpg/shared mutation                        # shared: run all
+pnpm --filter @ai-trpg/shared mutation:file "src/lib/foo.ts"  # shared: single file
+pnpm --filter @ai-trpg/api mutation                           # api: run all
+pnpm --filter @ai-trpg/api mutation:file "src/services/foo.ts" # api: single file
 ```
 
 ## Architecture Decisions

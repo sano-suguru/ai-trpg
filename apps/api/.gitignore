@@ -31,3 +31,10 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# Stryker Mutation Testing
+.stryker-tmp/
+reports/mutation/
+
+# Test Coverage
+reports/coverage/

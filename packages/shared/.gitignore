@@ -1,0 +1,6 @@
+# Stryker Mutation Testing
+.stryker-tmp/
+reports/mutation/
+
+# Test Coverage
+reports/coverage/

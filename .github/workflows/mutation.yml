@@ -1,0 +1,75 @@
+name: Mutation Testing
+
+on:
+  # 毎週月曜 9:00 JST (日曜 24:00 UTC)
+  schedule:
+    - cron: "0 0 * * 1"
+  # 手動実行
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target package (all, shared, api)"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - shared
+          - api
+
+jobs:
+  mutation-shared:
+    name: Mutation Test (shared)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.target == 'all' || github.event.inputs.target == 'shared'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run mutation tests
+        run: pnpm --filter @ai-trpg/shared mutation
+        continue-on-error: true
+
+      - name: Upload mutation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report-shared
+          path: packages/shared/reports/mutation/
+          retention-days: 30
+
+  mutation-api:
+    name: Mutation Test (api)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.target == 'all' || github.event.inputs.target == 'api'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run mutation tests
+        run: pnpm --filter @ai-trpg/api mutation
+        continue-on-error: true
+
+      - name: Upload mutation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report-api
+          path: apps/api/reports/mutation/
+          retention-days: 30

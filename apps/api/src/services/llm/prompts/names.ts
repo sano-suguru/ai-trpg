@@ -79,15 +79,13 @@ export function parseNamesResponse(text: string): string[] {
     text
       .split("\n")
       .map((line) => line.trim())
-      // 空行を除去
-      .filter((line) => line.length > 0)
       // 箇条書き記号を除去
       .map((line) => line.replace(/^[-・*•]\s*/, ""))
       // 番号付きリストの番号を除去
       .map((line) => line.replace(/^\d+[.)]\s*/, ""))
       // 引用符を除去
       .map((line) => line.replace(/^["「『]|["」』]$/g, ""))
-      // 短すぎる行を除去
+      // 短すぎる行（2文字未満）と空行を除去
       .filter((line) => line.length >= 2)
       // 最大10個まで
       .slice(0, 10)

@@ -49,7 +49,6 @@ function createAdminClient() {
   });
 }
 
-
 /**
  * テストユーザーを作成（Admin API使用）
  *

@@ -4,5 +4,20 @@ export default defineConfig({
   test: {
     globals: true,
     include: ["src/**/*.test.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "json"],
+      reportsDirectory: "./reports/coverage",
+      include: ["src/**/*.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/**/*.d.ts",
+        "src/**/index.ts",
+        "src/scripts/**",
+        "src/trpc/**",
+        "src/features/**/router.ts",
+        "src/infrastructure/**",
+      ],
+    },
   },
 });
