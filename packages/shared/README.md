@@ -113,10 +113,30 @@ function findUser(id: UserId): Result<User, AppError> {
 ## コマンド
 
 ```bash
-pnpm typecheck  # 型チェック
-pnpm lint       # lint
-pnpm test       # ユニットテスト（vitest）
+pnpm typecheck                       # 型チェック
+pnpm lint                            # lint
+pnpm test                            # ユニットテスト（vitest）
+pnpm test:coverage                   # カバレッジ計測
+pnpm mutation                        # ミューテーションテスト（全対象）
+pnpm mutation:file "src/lib/foo.ts"  # ミューテーションテスト（単一ファイル）
 ```
+
+### カバレッジ計測
+
+V8を使用したコードカバレッジを計測できます。
+
+- HTMLレポート: `reports/coverage/index.html`
+- JSONレポート: `reports/coverage/coverage-final.json`
+
+### ミューテーションテスト
+
+[Stryker](https://stryker-mutator.io/) を使用したミューテーションテストでテストの品質を検証できます。
+
+- 生存ミュータント（Survived）= テストの弱点
+- HTMLレポート: `reports/mutation/index.html`
+- JSONレポート: `reports/mutation/mutation-report.json`
+
+**推奨:** ファイル単位で実行（全体実行は時間がかかるため）
 
 ## 依存関係
 

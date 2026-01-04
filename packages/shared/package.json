@@ -19,11 +19,18 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "mutation": "stryker run",
+    "mutation:file": "stryker run --mutate"
   },
   "devDependencies": {
     "@ai-trpg/eslint-config": "workspace:*",
     "@ai-trpg/typescript-config": "workspace:*",
+    "@stryker-mutator/core": "^9.4.0",
+    "@stryker-mutator/typescript-checker": "^9.4.0",
+    "@stryker-mutator/vitest-runner": "^9.4.0",
+    "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.39.2",
     "typescript": "5.9.3",
     "vitest": "^4.0.16"

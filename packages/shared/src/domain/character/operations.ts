@@ -267,10 +267,6 @@ export function canDieInSession(
   if (isOwner) return true;
 
   // 借用キャラの場合、lending === "all" のみ死亡可能
-  if (character._tag === "BorrowableCharacter") {
-    return character.lending === "all";
-  }
-
   return character.lending === "all";
 }
 
@@ -283,10 +279,7 @@ export function canHavePermanentChanges(
 ): boolean {
   if (isOwner) return true;
 
-  if (character._tag === "BorrowableCharacter") {
-    return character.lending === "all";
-  }
-
+  // 借用キャラの場合、lending === "all" のみ永続的変更可能
   return character.lending === "all";
 }
 

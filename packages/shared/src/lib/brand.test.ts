@@ -29,6 +29,17 @@ describe("brand utilities", () => {
       expect(isValidUuid(123)).toBe(false);
       expect(isValidUuid(null)).toBe(false);
     });
+
+    it("should return false for UUID with extra characters", () => {
+      // Test anchor ^ (start of string)
+      expect(isValidUuid("prefix-550e8400-e29b-41d4-a716-446655440000")).toBe(
+        false,
+      );
+      // Test anchor $ (end of string)
+      expect(isValidUuid("550e8400-e29b-41d4-a716-446655440000-suffix")).toBe(
+        false,
+      );
+    });
   });
 
   describe("isNonEmptyString", () => {
