@@ -18,7 +18,7 @@
     "drizzle-kit": "drizzle-kit",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "seed": "npx tsx src/scripts/seed.ts",
+    "seed": "tsx src/scripts/seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
