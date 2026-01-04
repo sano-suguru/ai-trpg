@@ -211,10 +211,8 @@ export function FragmentStep() {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-zinc-100 mb-2">断片を選ぶ</h2>
-        <p className="text-zinc-400">
-          キャラクターを形作る断片を選んでください
-        </p>
+        <h2 className="text-2xl font-bold text-zinc-100 mb-2">過去を選ぶ</h2>
+        <p className="text-zinc-400">キャラクターの過去を選んでください</p>
         <p className="text-zinc-500 text-sm mt-1">出自・喪失・刻印は必須です</p>
       </div>
 
@@ -240,7 +238,7 @@ export function FragmentStep() {
               : "bg-zinc-700 text-zinc-500 cursor-not-allowed"
           }`}
         >
-          次へ：経歴を生成
+          次へ：生い立ちを生成
         </button>
       </div>
     </div>

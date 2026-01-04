@@ -59,10 +59,10 @@ test.describe("キャラクター詳細", () => {
     await expect(page.getByText(SEED_CHARACTERS.sed.title)).toBeVisible();
   });
 
-  test("断片情報が表示される", async ({ page }) => {
+  test("過去情報が表示される", async ({ page }) => {
     await page.goto(`/characters/${SEED_CHARACTERS.sed.id}`);
 
-    // セドの断片が表示されることを確認
+    // セドの過去が表示されることを確認
     await expect(page.getByText("灰燼の街の生き残り")).toBeVisible(); // origin
     await expect(page.getByText("愛した人を自らの手で葬った")).toBeVisible(); // loss
     await expect(page.getByText("焼け焦げた指先")).toBeVisible(); // mark

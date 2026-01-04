@@ -6,9 +6,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // CI: 1ワーカー（Mailpit認証の競合回避）
-  // ローカル: 2ワーカー（多少のフレーキー許容）
-  workers: process.env.CI ? 1 : 2,
+  // Service Role API による認証で安定（ローカルAPIサーバーの負荷を考慮し1に制限）
+  // CI環境ではリソースに余裕があれば2に増やすことを検討
+  workers: process.env.CI ? 2 : 1,
   timeout: 30000, // 各テストのタイムアウト（デフォルト30秒）
   expect: {
     timeout: 15000, // expectのデフォルトタイムアウト
@@ -21,11 +21,11 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5173",
 
-    // スクショ: 常に撮影（実装検証のため）
-    screenshot: "on",
+    // スクショ: 失敗時のみ
+    screenshot: "only-on-failure",
 
-    // 動画: 常に撮影（実装検証のため）
-    video: "on",
+    // 動画: 失敗時のみ
+    video: "retain-on-failure",
 
     // トレース: 失敗時のみ
     trace: "on-first-retry",
