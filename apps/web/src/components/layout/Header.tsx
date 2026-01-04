@@ -36,6 +36,14 @@ export function Header() {
           >
             ダンジョン
           </Link>
+          {user && (
+            <Link
+              to="/dashboard"
+              className="text-zinc-400 hover:text-zinc-100 transition-colors [&.active]:text-amber-500"
+            >
+              マイページ
+            </Link>
+          )}
 
           {/* 認証ステータス */}
           {isLoading ? (
