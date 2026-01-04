@@ -20,6 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Run `pnpm lint -- --fix` and `pnpm typecheck` after making changes
 - `pnpm lint -- --fix` runs both ESLint and Prettier (auto-format)
+- Run `pnpm similarity` to detect code duplication before completing refactoring tasks
 - Fix ALL errors AND warnings before considering a task complete
 - Treat warnings as errors - do not ignore or defer them
 
@@ -113,6 +114,9 @@ pnpm lint
 
 # Type check
 pnpm typecheck
+
+# Check code similarity
+pnpm similarity
 
 # E2E tests
 pnpm --filter @ai-trpg/web e2e          # headless

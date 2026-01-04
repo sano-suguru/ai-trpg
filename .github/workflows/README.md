@@ -12,10 +12,11 @@ PRとmainブランチへのプッシュ時に実行される。
 
 #### ジョブ構成
 
-| ジョブ               | トリガー | 内容                          |
-| -------------------- | -------- | ----------------------------- |
-| `lint-and-typecheck` | PR, push | ESLint + TypeScript型チェック |
-| `e2e`                | PR, push | Playwright E2Eテスト          |
+| ジョブ               | トリガー | 内容                              |
+| -------------------- | -------- | --------------------------------- |
+| `lint-and-typecheck` | PR, push | ESLint + TypeScript型チェック     |
+| `similarity`         | PR, push | コード重複検出（警告のみ）        |
+| `e2e`                | PR, push | Playwright E2Eテスト              |
 
 #### E2Eテストの実行フロー
 
