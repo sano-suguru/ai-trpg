@@ -2,17 +2,14 @@
  * キャラクター作成ウィザードのE2Eテスト
  *
  * 認証戦略:
- * - Worker fixture で各ワーカーごとに1回だけログイン
- * - storageState を保存して同一ワーカー内で再利用
- * - parallelIndex でユニークなメールアドレスを生成し競合を回避
+ * - Service Role API でテストユーザーを作成し、storageState で認証状態を設定
+ * - Worker fixture で各ワーカーごとに1回だけセッション取得
+ * - ブラウザで localStorage を設定し、context.storageState() で保存
+ * - 完全に決定論的で並列実行時も競合なし
  */
 
-import {
-  test as baseTest,
-  expect,
-  type Page,
-  type Browser,
-} from "@playwright/test";
+import { test as baseTest, expect, type Page } from "@playwright/test";
+import { createTestSession, WEB_APP_URL } from "./auth-setup";
 import fs from "fs";
 import path from "path";
 
@@ -21,12 +18,13 @@ import path from "path";
 // ========================================
 
 export const test = baseTest.extend<object, { workerStorageState: string }>({
-  // 全テストで同じ storageState を使用
+  // storageState ファイルパスを使用
   storageState: ({ workerStorageState }, use) => use(workerStorageState),
 
-  // Worker ごとに1回だけ認証
+  // Worker ごとに1回だけセッション取得して storageState ファイルに保存
   workerStorageState: [
     async ({ browser }, use, testInfo) => {
+      // storageState ファイルのパスを生成
       const id = testInfo.parallelIndex;
       const fileName = path.resolve(
         testInfo.project.outputDir,
@@ -42,110 +40,47 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
       // 認証ディレクトリを作成
       fs.mkdirSync(path.dirname(fileName), { recursive: true });
 
-      // 認証をリトライ付きで実行（並列実行時のMailpit競合対策）
-      const maxRetries = 3;
-      let lastError: Error | null = null;
+      // テストユーザーを作成（Service Role API）
+      await createTestSession(id);
 
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const context = await browser.newContext();
-        const page = await context.newPage();
+      // 新しいコンテキストでブラウザを開き、実際にログイン
+      const context = await browser.newContext();
+      const page = await context.newPage();
 
-        try {
-          // リトライ時はワーカーごとに異なるディレイを追加
-          if (attempt > 0) {
-            await page.waitForTimeout(id * 2000 + attempt * 3000);
+      // ブラウザ内で Supabase クライアントを使って直接ログイン
+      // これにより Supabase が正しいフォーマットでセッションを保存する
+      await page.goto(WEB_APP_URL, { waitUntil: "networkidle" });
+
+      const email = `e2e-worker${id}@test.local`;
+      const password = "e2e-test-password-12345";
+
+      await page.evaluate(
+        async ({ email, password }) => {
+          // @ts-expect-error - supabase is available globally via window
+          const { supabase } = await import("/src/lib/supabase.ts");
+          const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (error) {
+            throw new Error(`Login failed: ${error.message}`);
           }
+        },
+        { email, password },
+      );
 
-          await authenticateWithMagicLink(browser, page, id, attempt);
+      // セッションが保存されるまで少し待機
+      await page.waitForTimeout(500);
 
-          // storageState を保存
-          await context.storageState({ path: fileName });
-          await context.close();
-          await use(fileName);
-          return;
-        } catch (error) {
-          lastError = error as Error;
-          await context.close();
-          // リトライ前に少し待機
-          if (attempt < maxRetries - 1) {
-            await new Promise((r) => setTimeout(r, 2000));
-          }
-        }
-      }
+      // Playwright の storageState() で保存
+      await context.storageState({ path: fileName });
+      await context.close();
 
-      throw lastError ?? new Error("Authentication failed after retries");
+      await use(fileName);
     },
-    { scope: "worker", timeout: 120000 },
+    { scope: "worker", timeout: 60000 },
   ],
 });
-
-/**
- * Magic Link でログイン（Worker fixture から呼ばれる）
- */
-async function authenticateWithMagicLink(
-  browser: Browser,
-  page: Page,
-  workerId: number,
-  attempt: number = 0,
-) {
-  // Worker fixture のページは baseURL が設定されていないため絶対URLを使用
-  const baseURL = "http://localhost:5173";
-  await page.goto(`${baseURL}/login`);
-
-  // Worker ごと・リトライごとにユニークなメールアドレス
-  const email = `test-worker${workerId}-attempt${attempt}-${Date.now()}@example.com`;
-  await page.getByRole("textbox", { name: "メールアドレス" }).fill(email);
-  await page.getByRole("button", { name: "Magic Linkを送信" }).click();
-
-  await expect(page.getByText("メールを送信しました")).toBeVisible();
-
-  // Mailpit でメール取得（リトライ付き）
-  // 別コンテキストを使用（認証 cookie を共有しない）
-  const mailpitContext = await browser.newContext();
-  const mailpitPage = await mailpitContext.newPage();
-  let href: string | null = null;
-
-  try {
-    // メール配信には時間がかかることがあるので、十分なリトライ回数を設定
-    for (let attempt = 0; attempt < 30; attempt++) {
-      await mailpitPage.goto("http://127.0.0.1:54324");
-
-      // このワーカーのメールアドレス宛のメールだけを検索
-      const emailLink = mailpitPage.getByRole("link", {
-        name: new RegExp(`To: ${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
-      });
-
-      if (await emailLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await emailLink.click();
-
-        const previewFrame = mailpitPage
-          .locator("#preview-html")
-          .contentFrame();
-        await previewFrame
-          .getByRole("link", { name: "Log In" })
-          .waitFor({ timeout: 10000 });
-        href = await previewFrame
-          .getByRole("link", { name: "Log In" })
-          .getAttribute("href");
-
-        if (href) break;
-      }
-
-      await mailpitPage.waitForTimeout(1000);
-    }
-  } finally {
-    await mailpitContext.close();
-  }
-
-  if (!href) {
-    throw new Error(`Login link not found for ${email} after 30 attempts`);
-  }
-
-  // ログインリンクを開く
-  await page.goto(href);
-  await page.waitForURL(`${baseURL}/#`, { timeout: 15000 });
-  await expect(page.getByText(email)).toBeVisible({ timeout: 10000 });
-}
 
 // ========================================
 // ヘルパー関数
@@ -256,7 +191,9 @@ test.describe("キャラクター作成ウィザード", () => {
   test("必須断片が未選択だと次へ進めない", async ({ page }) => {
     await page.goto("/characters/new");
 
-    const nextButton = page.getByRole("button", { name: "次へ：経歴を生成" });
+    const nextButton = page.getByRole("button", {
+      name: "次へ：生い立ちを生成",
+    });
     await expect(nextButton).toBeDisabled();
 
     // 出自のみ選択
@@ -276,15 +213,15 @@ test.describe("キャラクター作成ウィザード", () => {
 
     // Step 1: 断片選択
     await selectRequiredFragments(page);
-    await page.getByRole("button", { name: "次へ：経歴を生成" }).click();
+    await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
 
-    // Step 2: 経歴生成
+    // Step 2: 生い立ち生成
     await expect(
-      page.getByRole("heading", { name: "経歴を生成" }),
+      page.getByRole("heading", { name: "生い立ちを生成" }),
     ).toBeVisible();
     await expect(page.getByText("出自: 灰燼の街の生き残り")).toBeVisible();
     await page
-      .getByRole("textbox", { name: "経歴" })
+      .getByRole("textbox", { name: "生い立ち" })
       .fill(
         "灰燼の街で生まれ、大火災ですべてを失った。白髪は炎の中で見た恐怖の証。",
       );
@@ -314,8 +251,10 @@ test.describe("キャラクター作成ウィザード", () => {
     await page.getByRole("button", { name: "キャラクターを作成" }).click();
 
     // リダイレクト確認（URLにUUIDが含まれる）
+    // キャラクター作成はDB書き込みを含むため、余裕を持って待機
     await expect(page).toHaveURL(
       /\/characters\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+      { timeout: 30000 },
     );
 
     // 詳細ページでキャラクター情報が表示されることを確認（getMine APIが正常動作）
@@ -326,7 +265,7 @@ test.describe("キャラクター作成ウィザード", () => {
     );
     // 断片情報が表示されていることを確認
     await expect(page.getByText("灰燼の街の生き残り")).toBeVisible();
-    // 経歴が表示されていることを確認
+    // 生い立ちが表示されていることを確認
     await expect(page.getByText("灰燼の街で生まれ")).toBeVisible();
   });
 
@@ -335,9 +274,9 @@ test.describe("キャラクター作成ウィザード", () => {
 
     // 断片選択して次へ
     await selectRequiredFragments(page);
-    await page.getByRole("button", { name: "次へ：経歴を生成" }).click();
+    await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
     await expect(
-      page.getByRole("heading", { name: "経歴を生成" }),
+      page.getByRole("heading", { name: "生い立ちを生成" }),
     ).toBeVisible();
 
     // 戻る
@@ -359,7 +298,9 @@ test.describe("キャラクター作成ウィザード", () => {
     await selectRequiredFragments(page);
 
     // リセット前に次へボタンが有効であることを確認
-    const nextButton = page.getByRole("button", { name: "次へ：経歴を生成" });
+    const nextButton = page.getByRole("button", {
+      name: "次へ：生い立ちを生成",
+    });
     await expect(nextButton).toBeEnabled();
 
     // confirm ダイアログを自動的に accept
@@ -372,21 +313,21 @@ test.describe("キャラクター作成ウィザード", () => {
     await expect(nextButton).toBeDisabled({ timeout: 5000 });
   });
 
-  test("LLM経歴生成が動作する", async ({ page }) => {
+  test("LLM生い立ち生成が動作する", async ({ page }) => {
     await page.goto("/characters/new");
 
     // 断片選択して次へ
     await selectRequiredFragments(page);
-    await page.getByRole("button", { name: "次へ：経歴を生成" }).click();
+    await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
 
-    // 経歴生成画面に遷移
+    // 生い立ち生成画面に遷移
     await expect(
-      page.getByRole("heading", { name: "経歴を生成" }),
+      page.getByRole("heading", { name: "生い立ちを生成" }),
     ).toBeVisible();
 
     // 自動生成が開始されることを確認（ローディング表示）
     // 注意: 生成が速すぎると見えない場合があるため、テキストエリアまたはローディングを待つ
-    const biographyTextarea = page.getByRole("textbox", { name: "経歴" });
+    const biographyTextarea = page.getByRole("textbox", { name: "生い立ち" });
     await biographyTextarea.waitFor({ state: "visible", timeout: 15000 });
 
     // モックLLMのレスポンスが表示されることを確認
@@ -400,12 +341,12 @@ test.describe("キャラクター作成ウィザード", () => {
   test("LLM名前候補生成が動作する", async ({ page }) => {
     await page.goto("/characters/new");
 
-    // 断片選択 → 経歴生成
+    // 断片選択 → 生い立ち生成
     await selectRequiredFragments(page);
-    await page.getByRole("button", { name: "次へ：経歴を生成" }).click();
+    await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
 
-    // 経歴生成完了を待つ
-    const biographyTextarea = page.getByRole("textbox", { name: "経歴" });
+    // 生い立ち生成完了を待つ
+    const biographyTextarea = page.getByRole("textbox", { name: "生い立ち" });
     await biographyTextarea.waitFor({ state: "visible", timeout: 15000 });
     await expect(biographyTextarea).toHaveValue(/灰の時代に生まれ/, {
       timeout: 15000,
