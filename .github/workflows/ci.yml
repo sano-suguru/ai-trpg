@@ -29,6 +29,27 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+  similarity:
+    name: Code Similarity Check
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+
+      - name: Install similarity-ts
+        run: cargo install similarity-ts
+
+      - name: Check code similarity
+        run: similarity-ts check apps/ packages/ --extensions ts,tsx
+
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
