@@ -46,8 +46,8 @@ interface StepProgressProps {
 }
 
 const STEPS: { id: WizardStep; label: string }[] = [
-  { id: "fragments", label: "断片" },
-  { id: "biography", label: "経歴" },
+  { id: "fragments", label: "過去" },
+  { id: "biography", label: "生い立ち" },
   { id: "nameDirectives", label: "名前・指針" },
   { id: "confirm", label: "確認" },
 ];
@@ -162,7 +162,7 @@ function CharacterNewPage() {
             キャラクター作成
           </h1>
           <p className="text-zinc-400">
-            断片から物語の主人公を生み出しましょう
+            過去から物語の主人公を生み出しましょう
           </p>
         </div>
 

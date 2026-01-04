@@ -8,13 +8,30 @@
 
 import { createClient, type Session } from "@supabase/supabase-js";
 
-// ローカル Supabase の設定（supabase start のデフォルト値）
-const SUPABASE_URL = "http://127.0.0.1:54321";
-// Service Role Key（supabase start で生成されるデフォルト値）
+// ========================================
+// 環境設定（環境変数優先、ローカルデフォルトにフォールバック）
+// ========================================
+
+// Supabase URL（CI環境変数またはローカルデフォルト）
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ??
+  process.env.VITE_SUPABASE_URL ??
+  "http://127.0.0.1:54321";
+
+// Service Role Key（CI環境変数またはローカルデフォルト）
+// Note: これは supabase start のデフォルト値で、公開されている開発用キー
 const SUPABASE_SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_KEY ??
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
 
-// テストユーザーの固定パスワード
+// Anon Key（CI環境変数またはローカルデフォルト）
+// Note: これは supabase start のデフォルト値で、公開されている開発用キー
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ??
+  process.env.VITE_SUPABASE_ANON_KEY ??
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+
+// テストユーザーの固定パスワード（ローカルテスト専用）
 const TEST_PASSWORD = "e2e-test-password-12345";
 
 // Web アプリの URL
@@ -36,10 +53,6 @@ function createAdminClient() {
  * 通常のクライアントを作成（Anon Key を使用）
  */
 function createAnonClient() {
-  // ローカル Supabase の Anon Key
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
-
   return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       autoRefreshToken: false,
@@ -49,16 +62,18 @@ function createAnonClient() {
 }
 
 /**
- * テストユーザーを作成またはセッションを取得
+ * テストユーザーを作成（Admin API使用）
+ *
+ * ユーザーが存在しない場合のみ作成する。
+ * セッション取得はブラウザ内で行うため、ここでは作成のみ。
  *
  * @param workerId - Playwright の parallelIndex（ワーカーごとにユニーク）
- * @returns セッション情報
  */
-export async function createTestSession(workerId: number): Promise<Session> {
+export async function createTestUser(workerId: number): Promise<void> {
   const email = `e2e-worker${workerId}@test.local`;
   const adminClient = createAdminClient();
 
-  // 1. ユーザーが存在するか確認し、なければ作成
+  // ユーザーが存在するか確認し、なければ作成
   const { data: existingUsers } = await adminClient.auth.admin.listUsers();
   const existingUser = existingUsers?.users.find((u) => u.email === email);
 
@@ -74,8 +89,19 @@ export async function createTestSession(workerId: number): Promise<Session> {
       throw new Error(`Failed to create test user: ${createError.message}`);
     }
   }
+}
 
-  // 2. signInWithPassword でセッションを取得
+/**
+ * テストユーザーを作成してセッションを取得
+ *
+ * @param workerId - Playwright の parallelIndex（ワーカーごとにユニーク）
+ * @returns セッション情報
+ * @deprecated ブラウザ内認証を推奨。createTestUser + getAuthConfig を使用してください
+ */
+export async function createTestSession(workerId: number): Promise<Session> {
+  await createTestUser(workerId);
+
+  const email = `e2e-worker${workerId}@test.local`;
   const anonClient = createAnonClient();
   const { data, error: signInError } = await anonClient.auth.signInWithPassword(
     {
@@ -94,6 +120,17 @@ export async function createTestSession(workerId: number): Promise<Session> {
 }
 
 /**
+ * Supabase の localStorage キーを生成
+ *
+ * Supabase のキー形式: sb-{host}-auth-token
+ * 例: http://127.0.0.1:54321 → sb-127.0.0.1-auth-token
+ */
+function getStorageKey(): string {
+  const url = new URL(SUPABASE_URL);
+  return `sb-${url.hostname}-auth-token`;
+}
+
+/**
  * セッションデータを取得（localStorage に注入する形式）
  *
  * @param session - Supabase のセッション
@@ -103,9 +140,7 @@ export function getSessionData(session: Session): {
   storageKey: string;
   sessionData: object;
 } {
-  // Supabase の localStorage キー形式: sb-{host}-auth-token
-  // 127.0.0.1 の場合: sb-127.0.0.1-auth-token
-  const storageKey = "sb-127.0.0.1-auth-token";
+  const storageKey = getStorageKey();
 
   // localStorage に注入するデータ形式
   const sessionData = {
@@ -122,6 +157,25 @@ export function getSessionData(session: Session): {
 
 /** Web アプリの URL（エクスポート用） */
 export const WEB_APP_URL = WEB_APP_ORIGIN;
+
+/**
+ * ブラウザ内認証に必要な情報を取得
+ *
+ * Node.js側で環境変数を解決し、ブラウザに渡す
+ */
+export function getAuthConfig(workerId: number): {
+  supabaseUrl: string;
+  supabaseKey: string;
+  email: string;
+  password: string;
+} {
+  return {
+    supabaseUrl: SUPABASE_URL,
+    supabaseKey: SUPABASE_ANON_KEY,
+    email: `e2e-worker${workerId}@test.local`,
+    password: TEST_PASSWORD,
+  };
+}
 
 /**
  * テストユーザーを削除（クリーンアップ用）

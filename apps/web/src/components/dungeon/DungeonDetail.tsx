@@ -153,7 +153,7 @@ export function DungeonDetail({ dungeon }: DungeonDetailProps) {
           </h2>
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <p className="text-amber-500 text-sm mb-4">
-              キャラクターの断片とダンジョンが共鳴すると特別なイベントが発生します
+              キャラクターの過去とダンジョンが共鳴すると特別なイベントが発生します
             </p>
             <div className="space-y-3">
               {dungeon.resonance.map((trigger, index) => (

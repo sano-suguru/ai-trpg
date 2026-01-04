@@ -51,10 +51,10 @@ export function CharacterDetail({ character }: CharacterDetailProps) {
         </div>
       </header>
 
-      {/* 断片セクション */}
+      {/* 過去セクション */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-4 text-zinc-300 border-b border-zinc-700 pb-2">
-          断片 ─ Fragments
+          過去 ─ Background
         </h2>
         <FragmentList fragments={character.fragments} />
       </section>
@@ -67,11 +67,11 @@ export function CharacterDetail({ character }: CharacterDetailProps) {
         <DirectiveList directives={character.directives} />
       </section>
 
-      {/* 経歴セクション */}
+      {/* 生い立ちセクション */}
       {character.biography && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold mb-4 text-zinc-300 border-b border-zinc-700 pb-2">
-            経歴 ─ Biography
+            生い立ち ─ Biography
           </h2>
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed">

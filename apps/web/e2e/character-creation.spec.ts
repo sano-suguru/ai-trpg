@@ -9,7 +9,12 @@
  */
 
 import { test as baseTest, expect, type Page } from "@playwright/test";
-import { createTestSession, WEB_APP_URL } from "./auth-setup";
+import {
+  createTestUser,
+  getAuthConfig,
+  deleteTestUser,
+  WEB_APP_URL,
+} from "./auth-setup";
 import fs from "fs";
 import path from "path";
 
@@ -40,30 +45,33 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
       // 認証ディレクトリを作成
       fs.mkdirSync(path.dirname(fileName), { recursive: true });
 
-      // テストユーザーを作成（Service Role API）
-      await createTestSession(id);
+      // テストユーザーを作成（Admin API）
+      await createTestUser(id);
 
-      // 新しいコンテキストでブラウザを開き、実際にログイン
+      // 認証情報を取得（Node.js側で環境変数を解決）
+      const { email, password } = getAuthConfig(id);
+
+      // 新しいコンテキストでブラウザを開く
       const context = await browser.newContext();
       const page = await context.newPage();
 
-      // ブラウザ内で Supabase クライアントを使って直接ログイン
-      // これにより Supabase が正しいフォーマットでセッションを保存する
+      // ページを開いてブラウザ内でサインイン
+      // Viteがモジュールを提供するため、/src/... パスでインポート可能
       await page.goto(WEB_APP_URL, { waitUntil: "networkidle" });
-
-      const email = `e2e-worker${id}@test.local`;
-      const password = "e2e-test-password-12345";
 
       await page.evaluate(
         async ({ email, password }) => {
-          // @ts-expect-error - supabase is available globally via window
+          // Vite開発サーバーがこのパスを変換してモジュールを提供
+          // @ts-expect-error - Vite serves this module
           const { supabase } = await import("/src/lib/supabase.ts");
           const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
           if (error) {
-            throw new Error(`Login failed: ${error.message}`);
+            throw new Error(
+              `Login failed: ${error.message || error.name || JSON.stringify(error)}`,
+            );
           }
         },
         { email, password },
@@ -77,6 +85,9 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
       await context.close();
 
       await use(fileName);
+
+      // Worker 終了時にテストユーザーを削除（クリーンアップ）
+      await deleteTestUser(id);
     },
     { scope: "worker", timeout: 60000 },
   ],
@@ -180,15 +191,15 @@ baseTest.describe("認証チェック", () => {
 
 // 認証が必要なテスト（Worker fixture で認証済み）
 test.describe("キャラクター作成ウィザード", () => {
-  test("断片選択画面が表示される", async ({ page }) => {
+  test("過去選択画面が表示される", async ({ page }) => {
     await page.goto("/characters/new");
     await expect(
-      page.getByRole("heading", { name: "断片を選ぶ" }),
+      page.getByRole("heading", { name: "過去を選ぶ" }),
     ).toBeVisible();
     await expect(page.getByText("出自・喪失・刻印は必須です")).toBeVisible();
   });
 
-  test("必須断片が未選択だと次へ進めない", async ({ page }) => {
+  test("必須の過去が未選択だと次へ進めない", async ({ page }) => {
     await page.goto("/characters/new");
 
     const nextButton = page.getByRole("button", {
@@ -208,10 +219,10 @@ test.describe("キャラクター作成ウィザード", () => {
   test("キャラクター作成の全フローを実行できる", async ({ page }) => {
     await page.goto("/characters/new");
     await expect(
-      page.getByRole("heading", { name: "断片を選ぶ" }),
+      page.getByRole("heading", { name: "過去を選ぶ" }),
     ).toBeVisible();
 
-    // Step 1: 断片選択
+    // Step 1: 過去選択
     await selectRequiredFragments(page);
     await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
 
@@ -263,7 +274,7 @@ test.describe("キャラクター作成ウィザード", () => {
         timeout: 10000,
       },
     );
-    // 断片情報が表示されていることを確認
+    // 過去情報が表示されていることを確認
     await expect(page.getByText("灰燼の街の生き残り")).toBeVisible();
     // 生い立ちが表示されていることを確認
     await expect(page.getByText("灰燼の街で生まれ")).toBeVisible();
@@ -272,7 +283,7 @@ test.describe("キャラクター作成ウィザード", () => {
   test("戻るボタンで前のステップに戻れる", async ({ page }) => {
     await page.goto("/characters/new");
 
-    // 断片選択して次へ
+    // 過去選択して次へ
     await selectRequiredFragments(page);
     await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
     await expect(
@@ -282,10 +293,10 @@ test.describe("キャラクター作成ウィザード", () => {
     // 戻る
     await page.getByRole("button", { name: "戻る" }).click();
     await expect(
-      page.getByRole("heading", { name: "断片を選ぶ" }),
+      page.getByRole("heading", { name: "過去を選ぶ" }),
     ).toBeVisible();
 
-    // 選択した断片が保持されていることを確認
+    // 選択した過去が保持されていることを確認
     await expect(
       page.getByRole("button", { name: /出自.*灰燼の街の生き残り/ }),
     ).toBeVisible();
@@ -294,7 +305,7 @@ test.describe("キャラクター作成ウィザード", () => {
   test("リセットボタンで最初からやり直せる", async ({ page }) => {
     await page.goto("/characters/new");
 
-    // 断片選択
+    // 過去選択
     await selectRequiredFragments(page);
 
     // リセット前に次へボタンが有効であることを確認
@@ -316,7 +327,7 @@ test.describe("キャラクター作成ウィザード", () => {
   test("LLM生い立ち生成が動作する", async ({ page }) => {
     await page.goto("/characters/new");
 
-    // 断片選択して次へ
+    // 過去選択して次へ
     await selectRequiredFragments(page);
     await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
 
@@ -341,7 +352,7 @@ test.describe("キャラクター作成ウィザード", () => {
   test("LLM名前候補生成が動作する", async ({ page }) => {
     await page.goto("/characters/new");
 
-    // 断片選択 → 生い立ち生成
+    // 過去選択 → 生い立ち生成
     await selectRequiredFragments(page);
     await page.getByRole("button", { name: "次へ：生い立ちを生成" }).click();
 

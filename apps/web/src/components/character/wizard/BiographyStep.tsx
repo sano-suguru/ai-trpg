@@ -88,7 +88,7 @@ export function BiographyStep() {
 
   const handleGenerate = () => {
     if (!fragments.origin || !fragments.loss || !fragments.mark) {
-      setBiographyError("必須断片が選択されていません");
+      setBiographyError("必須の過去が選択されていません");
       return;
     }
 
@@ -112,15 +112,17 @@ export function BiographyStep() {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-zinc-100 mb-2">経歴を生成</h2>
+        <h2 className="text-2xl font-bold text-zinc-100 mb-2">
+          生い立ちを生成
+        </h2>
         <p className="text-zinc-400">
-          選んだ断片からキャラクターの経歴を生成します
+          選んだ過去からキャラクターの生い立ちを生成します
         </p>
       </div>
 
       {/* 選択された断片の表示 */}
       <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
-        <h3 className="text-sm font-medium text-zinc-400 mb-3">選択した断片</h3>
+        <h3 className="text-sm font-medium text-zinc-400 mb-3">選択した過去</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
           {fragments.origin && (
             <div>
@@ -168,7 +170,7 @@ export function BiographyStep() {
             htmlFor="biography"
             className="text-sm font-medium text-zinc-400"
           >
-            経歴
+            生い立ち
           </label>
           <button
             type="button"
@@ -188,9 +190,9 @@ export function BiographyStep() {
           <div className="bg-zinc-800 rounded-lg p-8 border border-zinc-700 flex items-center justify-center">
             <div className="text-center space-y-3">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mx-auto"></div>
-              <p className="text-zinc-400">経歴を生成しています...</p>
+              <p className="text-zinc-400">生い立ちを生成しています...</p>
               <p className="text-zinc-500 text-sm">
-                断片から物語を紡いでいます
+                過去から物語を紡いでいます
               </p>
             </div>
           </div>
@@ -200,7 +202,7 @@ export function BiographyStep() {
             value={biography}
             onChange={(e) => setBiography(e.target.value)}
             rows={10}
-            placeholder="ここに経歴が表示されます。生成後、自由に編集できます。"
+            placeholder="ここに生い立ちが表示されます。生成後、自由に編集できます。"
             className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-4 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 resize-none"
           />
         )}
@@ -208,19 +210,19 @@ export function BiographyStep() {
         {biographyError && (
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 space-y-2">
             <p className="text-red-400 text-sm font-medium">
-              経歴の生成に失敗しました
+              生い立ちの生成に失敗しました
             </p>
             <p className="text-zinc-400 text-sm">
               AI生成サービスが利用できない可能性があります。
-              上のテキストエリアに直接経歴を入力するか、しばらく待ってから再生成をお試しください。
+              上のテキストエリアに直接生い立ちを入力するか、しばらく待ってから再生成をお試しください。
             </p>
           </div>
         )}
 
         <p className="text-zinc-500 text-sm">
           {biography
-            ? "生成された経歴は自由に編集できます。約200〜400字程度を推奨します。"
-            : "経歴を直接入力することもできます。約200〜400字程度を推奨します。"}
+            ? "生成された生い立ちは自由に編集できます。約200〜400字程度を推奨します。"
+            : "生い立ちを直接入力することもできます。約200〜400字程度を推奨します。"}
         </p>
       </div>
 

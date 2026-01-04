@@ -109,9 +109,9 @@ export function ConfirmStep() {
         </div>
       </div>
 
-      {/* 断片 */}
+      {/* 過去 */}
       <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
-        <h4 className="text-sm font-medium text-zinc-400 mb-3">断片</h4>
+        <h4 className="text-sm font-medium text-zinc-400 mb-3">過去</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(fragments)
             .filter(([, value]) => value !== null)
@@ -129,9 +129,9 @@ export function ConfirmStep() {
         </div>
       </div>
 
-      {/* 経歴 */}
+      {/* 生い立ち */}
       <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
-        <h4 className="text-sm font-medium text-zinc-400 mb-3">経歴</h4>
+        <h4 className="text-sm font-medium text-zinc-400 mb-3">生い立ち</h4>
         <p className="text-zinc-200 whitespace-pre-wrap leading-relaxed">
           {biography}
         </p>
