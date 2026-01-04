@@ -16,71 +16,89 @@ pnpm build
 ## Code Quality
 
 ```bash
-# Lint all packages (ESLint + Prettier)
-pnpm lint
-
-# Lint with auto-fix
+# Lint all packages (ESLint + Prettier, with auto-fix)
 pnpm lint -- --fix
 
 # Type check all packages
 pnpm typecheck
 
-# Format code
-pnpm format
+# Check code similarity/duplication
+pnpm similarity
 ```
 
-## Database (Supabase)
+## Testing
+
+```bash
+# Run unit tests
+pnpm test
+
+# Test coverage (per package)
+pnpm --filter @ai-trpg/shared test:coverage
+pnpm --filter @ai-trpg/api test:coverage
+
+# Mutation testing (per package)
+pnpm --filter @ai-trpg/shared mutation
+pnpm --filter @ai-trpg/shared mutation:file "src/lib/foo.ts"
+pnpm --filter @ai-trpg/api mutation
+pnpm --filter @ai-trpg/api mutation:file "src/services/foo.ts"
+
+# E2E tests (web)
+pnpm --filter @ai-trpg/web e2e          # headless
+pnpm --filter @ai-trpg/web e2e:headed   # with browser
+pnpm --filter @ai-trpg/web e2e:ui       # UI mode
+```
+
+## Database (Supabase + Drizzle)
 
 ```bash
 # Start Supabase local
-supabase start
+npx supabase start
 
-# Run database migrations
-supabase db push
+# Check Supabase status
+npx supabase status
+
+# Push schema changes (Drizzle ORM) - NOT supabase db push
+pnpm --filter @ai-trpg/api db:push
+
+# Open Drizzle Studio (DB GUI)
+pnpm --filter @ai-trpg/api db:studio
+
+# Seed database
+pnpm --filter @ai-trpg/api seed
 ```
 
 ## Cloudflare Workers (API)
 
 ```bash
 # Start API dev server
-cd apps/api && pnpm dev
+pnpm --filter @ai-trpg/api dev
 
 # Deploy API
-cd apps/api && pnpm deploy
+pnpm --filter @ai-trpg/api deploy
 
 # Generate Cloudflare types
-cd apps/api && pnpm cf-typegen
+pnpm --filter @ai-trpg/api cf-typegen
 ```
 
 ## Web App
 
 ```bash
 # Start web dev server
-cd apps/web && pnpm dev
+pnpm --filter @ai-trpg/web dev
 
 # Build web app
-cd apps/web && pnpm build
+pnpm --filter @ai-trpg/web build
 
 # Preview production build
-cd apps/web && pnpm preview
+pnpm --filter @ai-trpg/web preview
 ```
 
 ## Turborepo
 
 ```bash
-# Run specific task
+# Run specific task across all packages
 turbo run <task>
 
 # Clean all build artifacts
 pnpm clean
-```
-
-## System Utilities (Darwin/macOS)
-
-```bash
-git       # Version control
-ls        # List directory
-cd        # Change directory
-grep      # Search text
-find      # Find files
 ```

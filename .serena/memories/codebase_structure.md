@@ -36,16 +36,12 @@ apps/api/
 │   │       ├── prompts/   # Prompt templates (biography, names)
 │   │       ├── service.ts # LLM service with fallback
 │   │       └── types.ts   # LLM types and interfaces
-│   ├── services/          # Shared services
-│   │   └── llm/           # LLM service layer
-│   │       ├── providers/ # LLM providers (Groq, Gemini, OpenRouter)
-│   │       ├── prompts/   # Prompt templates (biography, names)
-│   │       ├── service.ts # LLM service with fallback
-│   │       └── types.ts   # LLM types and interfaces
-│   └── infrastructure/
-│       ├── database/
-│       │   └── schema/    # Drizzle ORM schemas (incl. llmUsageLogs)
-│       └── rateLimit/     # LLM rate limiting (user/IP based)
+│   ├── infrastructure/
+│   │   ├── database/
+│   │   │   └── schema/    # Drizzle ORM schemas (incl. llmUsageLogs)
+│   │   └── rateLimit/     # LLM rate limiting (user/IP based)
+│   └── scripts/           # CLI scripts (seed.ts, etc.)
+├── stryker.config.json    # Mutation testing config
 └── wrangler.toml          # Cloudflare Workers config
 ```
 
@@ -61,13 +57,17 @@ apps/web/
 │   │   ├── __root.tsx     # Root layout
 │   │   ├── index.tsx      # Home page (/)
 │   │   ├── login.tsx      # Login page (/login)
+│   │   ├── dashboard.tsx  # Dashboard/My page (/dashboard)
 │   │   ├── characters/    # Character routes
 │   │   │   ├── index.tsx  # Character list (/characters)
+│   │   │   ├── $id.tsx    # Character detail (/characters/:id)
 │   │   │   └── new.tsx    # Character creation wizard (/characters/new)
 │   │   └── dungeons/      # Dungeon routes
-│   │       └── index.tsx  # Dungeon list (/dungeons)
+│   │       ├── index.tsx  # Dungeon list (/dungeons)
+│   │       └── $id.tsx    # Dungeon detail (/dungeons/:id)
 │   ├── components/        # UI components
-│   │   ├── layout/        # Layout components (Header, etc.)
+│   │   ├── layout/        # Layout components (Header with nav links)
+│   │   ├── ui/            # shadcn/ui components
 │   │   └── character/     # Character components
 │   │       ├── wizard/    # Creation wizard steps
 │   │       │   ├── FragmentStep.tsx
@@ -84,6 +84,7 @@ apps/web/
 │       ├── supabase.ts    # Supabase client
 │       └── utils.ts       # General utilities
 ├── e2e/                   # E2E tests (Playwright)
+├── playwright.config.ts   # Playwright configuration
 └── vite.config.ts         # Vite configuration (TanStack Router plugin)
 ```
 
@@ -103,6 +104,7 @@ packages/shared/
     │   ├── fragments.ts   # Fragment master data (origin/loss/mark/sin/quest/trait)
     │   ├── directives.ts  # Directive master data (4 situations)
     │   └── index.ts       # Barrel export
+    ├── fixtures/          # Test fixtures (seed metadata)
     └── lib/               # Utilities (result.ts, brand.ts)
 ```
 
@@ -118,6 +120,6 @@ Shared ESLint configurations with Prettier integration.
 
 - `docs/design.md` - Full game design specification (Japanese)
 - `docs/architecture.md` - Technical architecture details
-- `packages/shared/src/types/errors.ts` - Domain error types
+- `packages/shared/src/types/errors.ts` - Domain error types and `Errors` factory
 - `packages/shared/src/lib/result.ts` - Result type utilities
 - `packages/shared/src/lib/brand.ts` - Branded type utility

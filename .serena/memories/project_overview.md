@@ -10,12 +10,13 @@ AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG 
 
 ### Frontend (apps/web)
 
-- React 19 + TypeScript + Vite
+- React 19 + TypeScript + Vite 7
 - TanStack Router (file-based routing)
 - TanStack Query + tRPC client
 - Tailwind CSS 4
 - Zustand (state management)
 - shadcn/ui components
+- Playwright (E2E testing)
 
 ### Backend (apps/api)
 
@@ -23,16 +24,18 @@ AI-TRPG (灰暦の世界 - The World of Ashen Calendar) is an AI-generated TRPG 
 - tRPC for type-safe API
 - Drizzle ORM
 - Supabase (PostgreSQL)
+- Vitest + Stryker (unit/mutation testing)
 
 ### Shared (packages/shared)
 
 - Domain models and primitives
 - Zod schemas
 - neverthrow Result types
+- Vitest + Stryker (unit/mutation testing)
 
 ### LLM Integration
 
-- Multi-provider: Gemini, Groq, GitHub Models
+- Multi-provider: Gemini, Groq, GitHub Models (OpenRouter)
 - Abstraction layer with fallback strategy
 - Rate limiting (user/IP based)
 - Usage logging to database
@@ -60,14 +63,27 @@ ai-trpg/
 - Protected routes with login redirect
 - Session management
 
-### Character Creation
+### Dashboard (My Page)
 
-- 4-step wizard: Fragment → Biography (AI) → Name/Directives → Confirm
+- User's own characters list
+- Quick navigation to character creation
+- Header navigation link
+
+### Character System
+
+- Character list (public/own views)
+- Character detail page
+- 4-step creation wizard: Fragment → Biography (AI) → Name/Directives → Confirm
 - Fragment selection (6 categories: origin, loss, mark, sin, quest, trait)
 - AI biography generation with LLM service (Groq/Gemini fallback)
 - AI name suggestions
 - Directive selection for 4 situations
 - Character save with lending settings
+
+### Dungeon System
+
+- Dungeon list page
+- Dungeon detail page
 
 ### Master Data APIs
 
@@ -77,10 +93,12 @@ ai-trpg/
 ## Dependency Rules
 
 - `apps/web` and `apps/api` depend on `packages/shared`
-- `apps/web` and `apps/api` must NOT depend on each other
+- `apps/web` may use `import type` for `AppRouter` from `apps/api` (tRPC type safety only)
+- `apps/web` and `apps/api` must NOT have runtime dependencies on each other
 - `packages/shared` has no internal dependencies
 
 ## Package Manager
 
-- pnpm 8.15.6
+- pnpm 10.27.0
+- Node.js 24.12.0 (via Volta)
 - Turborepo for monorepo orchestration
