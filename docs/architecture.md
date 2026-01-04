@@ -34,14 +34,15 @@
 
 ### 無料枠まとめ
 
-| サービス           | 無料枠                | 備考                   |
-| ------------------ | --------------------- | ---------------------- |
-| Cloudflare Workers | 100,000 req/日        | エッジ実行             |
-| Cloudflare Pages   | 無制限ビルド          | 500ビルド/月           |
-| Supabase           | 500MB DB, 1GB Storage | 認証・リアルタイム込み |
-| Google AI Studio   | 250K tokens/分        | 20 req/日制限          |
-| Groq               | 1,000 req/日          | 高速推論               |
-| GitHub Models      | Copilot Free連携      | 開発用途               |
+| サービス              | 無料枠                | 備考                         |
+| --------------------- | --------------------- | ---------------------------- |
+| Cloudflare Workers    | 100,000 req/日        | エッジ実行                   |
+| Cloudflare Pages      | 無制限ビルド          | 500ビルド/月                 |
+| Cloudflare AI Gateway | 無制限                | ログ・分析・レート制限       |
+| Supabase              | 500MB DB, 1GB Storage | 認証・リアルタイム込み       |
+| Google AI Studio      | 250K tokens/分        | Gemini 2.0 Flash             |
+| Groq                  | 14,400 req/日         | AI Gateway経由必須           |
+| OpenRouter            | 無料モデル対応        | DeepSeek等の無料モデル利用可 |
 
 ---
 
@@ -539,7 +540,7 @@ tRPCはリクエスト/レスポンス型。リアルタイム通信は別途対
 
 - 無料枠で運用したいが、単一プロバイダーの無料枠だけでは不足
 - プロバイダー障害時にサービス停止を避けたい
-- 用途によって最適なモデルが異なる（構造生成 vs 文章生成）
+- Cloudflare Workers からの直接アクセスがセキュリティポリシーでブロックされるプロバイダーがある
 
 **検討した選択肢:**
 
@@ -550,21 +551,80 @@ tRPCはリクエスト/レスポンス型。リアルタイム通信は別途対
 | **単一無料プロバイダー**   | 無料枠上限で詰む。障害時に全停止                         |
 | **複数プロバイダー抽象化** | **採用**。無料枠を組み合わせ、フォールバックで可用性確保 |
 
-### プロバイダー選定と役割分担
+### プロバイダー選定
 
-| 用途                 | プライマリ   | なぜ                             | フォールバック |
-| -------------------- | ------------ | -------------------------------- | -------------- |
-| **プロット構造生成** | Gemini       | 長いコンテキスト、構造理解が得意 | Groq           |
-| **シーン本文生成**   | Groq (Llama) | 高速、日本語品質が十分           | GitHub Models  |
-| **キャラ補助生成**   | Groq         | 短文生成は速度重視               | Gemini         |
+| プロバイダー   | デフォルトモデル        | 優先順位 | 特徴                                       |
+| -------------- | ----------------------- | -------- | ------------------------------------------ |
+| **Groq**       | llama-3.1-8b-instant    | 1        | 高速推論、AI Gateway経由必須               |
+| **OpenRouter** | deepseek/deepseek-chat  | 2        | 無料モデル対応、統合LLMゲートウェイ        |
+| **Gemini**     | gemini-2.0-flash        | 3        | 長コンテキスト対応、安全設定カスタマイズ可 |
+| **Mock**       | -                       | -        | E2Eテスト用固定レスポンス                  |
 
 **フォールバック戦略:**
 
-1. プライマリにリクエスト
-2. 失敗（レート制限 or エラー）→ 次のプロバイダーへ
-3. 全て失敗 → ユーザーに「しばらく待ってから再試行」を案内
+1. 優先順位順に利用可能なプロバイダー（APIキー設定済み）をチェック
+2. プライマリにリクエスト
+3. 失敗（レート制限 or エラー）→ 次のプロバイダーへ自動切り替え
+4. 全て失敗 → セキュリティのため詳細を隠し、汎用エラーを返却
 
-### セッション生成フロー
+### Cloudflare AI Gateway
+
+Cloudflare Workers から Groq API への直接アクセスはセキュリティポリシーでブロックされるため、
+**Cloudflare AI Gateway 経由でのアクセスが必須**となっている。
+
+**設定:**
+
+```bash
+# 環境変数
+CF_AI_GATEWAY_ACCOUNT_ID=your-account-id  # 32文字の16進数
+CF_AI_GATEWAY_ID=your-gateway-id          # ユーザー定義スラッグ
+```
+
+**エンドポイント構築:**
+
+```
+https://gateway.ai.cloudflare.com/v1/{accountId}/{gatewayId}/groq
+```
+
+**メリット:**
+
+- リクエストのログ・分析が可能
+- レート制限・キャッシュ機能を提供
+- Cloudflare のセキュリティポリシーを通過
+
+### レートリミット・使用ログ
+
+LLM API の過剰利用を防ぐため、データベースベースのレートリミットを実装。
+
+**設計方針:**
+
+- ユーザーごと・エンドポイントごとに時間ウィンドウベースで制限
+- API使用履歴をDBに記録し、分析・課金対応に備える
+- 古いログは確率的に自動削除（ガベージコレクション方式）
+
+**デフォルト設定:**
+
+- 時間ウィンドウ: 60秒
+- 最大リクエスト数: 10回/分
+
+### 構造化ログ
+
+Cloudflare Workers Logs ベストプラクティスに準拠した構造化ログシステムを実装。
+
+**設計方針:**
+
+- JSON形式でCloudflare Logsに出力
+- リクエストID・ユーザーIDを自動付与し、トレーサビリティを確保
+- プロバイダーごとのトークン使用量を記録
+
+### 現在のユースケース
+
+| ユースケース   | 説明                         |
+| -------------- | ---------------------------- |
+| **人物像生成** | 断片から人物像テキストを生成 |
+| **名前生成**   | 人物像と断片から名前候補を生成 |
+
+### セッション生成フロー（Phase 2 予定）
 
 ```
 1. 共鳴スキャン (ローカル) - LLM不使用、高速
@@ -573,8 +633,6 @@ tRPCはリクエスト/レスポンス型。リアルタイム通信は別途対
 4. 結合・保存             - DBへリプレイ保存
 5. 履歴更新               - キャラのhistory/relationships更新
 ```
-
-プロンプトテンプレートは `apps/api/src/services/llm/prompts/` に配置。
 
 ---
 
@@ -656,10 +714,17 @@ SUPABASE_URL=http://localhost:54321
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_KEY=your-service-key
 
-# LLM Providers
-GEMINI_API_KEY=your-gemini-key
-GROQ_API_KEY=your-groq-key
-GITHUB_TOKEN=your-github-pat  # GitHub Models用
+# LLM Providers（少なくとも1つ必要）
+GROQ_API_KEY=your-groq-key           # 優先順位1
+OPENROUTER_API_KEY=your-openrouter-key  # 優先順位2
+GEMINI_API_KEY=your-gemini-key       # 優先順位3
+
+# Cloudflare AI Gateway（本番環境で必須）
+CF_AI_GATEWAY_ACCOUNT_ID=your-account-id  # 32文字の16進数
+CF_AI_GATEWAY_ID=your-gateway-id          # ゲートウェイスラッグ
+
+# E2Eテスト用（設定するとモックLLMを使用）
+USE_MOCK_LLM=true
 
 # App
 VITE_API_URL=http://localhost:8787
@@ -729,4 +794,4 @@ VITE_API_URL=http://localhost:8787
 
 _このドキュメントは開発の進行に応じて更新されます。_
 
-**最終更新: 2025-12-31**
+**最終更新: 2026-01-04**
