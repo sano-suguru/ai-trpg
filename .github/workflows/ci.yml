@@ -144,7 +144,7 @@ jobs:
           DEBUG: pw:webserver
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-report
@@ -152,7 +152,7 @@ jobs:
           retention-days: 7
 
       - name: Upload test videos on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: test-results
