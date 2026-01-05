@@ -40,7 +40,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload mutation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mutation-report-shared
           path: packages/shared/reports/mutation/
@@ -68,7 +68,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload mutation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mutation-report-api
           path: apps/api/reports/mutation/
