@@ -19,7 +19,10 @@ import {
 } from "../features/session/repository";
 import { createDungeonRepository } from "../features/dungeon/repository";
 import { createCharacterRepository } from "../features/character/repository";
-import { selectAvailableProvider } from "../services/llm/providers";
+import {
+  selectAvailableProvider,
+  createMockProvider,
+} from "../services/llm/providers";
 import {
   runGenerationUseCase,
   applyHistoryUpdates,
@@ -40,6 +43,7 @@ interface Env {
   GEMINI_API_KEY?: string;
   CF_AI_GATEWAY_ACCOUNT_ID?: string;
   CF_AI_GATEWAY_ID?: string;
+  USE_MOCK_LLM?: string;
 }
 
 interface Variables {
@@ -105,19 +109,26 @@ sessionStreamRoutes.get("/:sessionId/stream", async (c) => {
   const dungeonRepo = createDungeonRepository(db);
   const characterRepo = createCharacterRepository(db);
 
-  // フォールバック戦略でLLMプロバイダーを選択
-  const llmProvider = selectAvailableProvider({
-    groqApiKey: c.env.GROQ_API_KEY,
-    openrouterApiKey: c.env.OPENROUTER_API_KEY,
-    geminiApiKey: c.env.GEMINI_API_KEY,
-    aiGateway: {
-      accountId: c.env.CF_AI_GATEWAY_ACCOUNT_ID ?? "",
-      gatewayId: c.env.CF_AI_GATEWAY_ID ?? "",
-    },
-  });
+  // USE_MOCK_LLM環境変数がtrueの場合はモックプロバイダーを使用
+  const useMockLlm = c.env.USE_MOCK_LLM === "true";
+  const llmProvider = useMockLlm
+    ? createMockProvider()
+    : selectAvailableProvider({
+        groqApiKey: c.env.GROQ_API_KEY,
+        openrouterApiKey: c.env.OPENROUTER_API_KEY,
+        geminiApiKey: c.env.GEMINI_API_KEY,
+        aiGateway: {
+          accountId: c.env.CF_AI_GATEWAY_ACCOUNT_ID ?? "",
+          gatewayId: c.env.CF_AI_GATEWAY_ID ?? "",
+        },
+      });
 
   if (!llmProvider) {
     return c.json({ error: "No LLM provider available" }, 503);
+  }
+
+  if (useMockLlm) {
+    logger.info("Using mock LLM provider for testing");
   }
 
   logger.info("Starting SSE stream", {
