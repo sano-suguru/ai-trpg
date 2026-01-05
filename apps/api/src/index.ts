@@ -14,6 +14,10 @@ import { createDatabase } from "./infrastructure/database/client";
 import { createCharacterRepository } from "./features/character/repository";
 import { createDungeonRepository } from "./features/dungeon/repository";
 import {
+  createSessionRepository,
+  createReplayRepository,
+} from "./features/session/repository";
+import {
   createSupabaseClient,
   type AuthUser,
 } from "./infrastructure/supabase/client";
@@ -23,6 +27,11 @@ import {
   runWithContext,
   generateRequestId,
 } from "./services/logger";
+import {
+  createMockProvider,
+  selectAvailableProvider,
+} from "./services/llm/providers";
+import { sessionStreamRoutes } from "./routes/session-stream";
 
 const logger = createLogger("API");
 
@@ -34,9 +43,15 @@ interface Env {
   DATABASE_URL: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_KEY: string;
-  // LLM API Keys (optional)
+  // LLM API Keys (optional, at least one required)
   GROQ_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
   GEMINI_API_KEY?: string;
+  // AI Gateway (Cloudflare) - required for Groq
+  CF_AI_GATEWAY_ACCOUNT_ID?: string;
+  CF_AI_GATEWAY_ID?: string;
+  // E2Eテスト用モックモード
+  USE_MOCK_LLM?: string;
 }
 
 interface Variables {
@@ -63,6 +78,9 @@ app.use(
 app.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
+
+// セッション生成SSEストリーム
+app.route("/api/session", sessionStreamRoutes);
 
 // tRPCエンドポイント
 app.use("/trpc/*", async (c, next) => {
@@ -100,12 +118,44 @@ app.use("/trpc/*", async (c, next) => {
       // Repositoryを作成
       const characterRepository = createCharacterRepository(db);
       const dungeonRepository = createDungeonRepository(db);
+      const sessionRepository = createSessionRepository(db);
+      const replayRepository = createReplayRepository(db);
+
+      // LLMプロバイダーを作成
+      // USE_MOCK_LLM=true の場合はモックプロバイダーを使用（E2Eテスト用）
+      const useMockLLM = c.env.USE_MOCK_LLM === "true";
+
+      // フォールバック戦略でプロバイダーを選択（優先順位: Groq → OpenRouter → Gemini）
+      const llmProvider = useMockLLM
+        ? createMockProvider()
+        : selectAvailableProvider({
+            groqApiKey: c.env.GROQ_API_KEY,
+            openrouterApiKey: c.env.OPENROUTER_API_KEY,
+            geminiApiKey: c.env.GEMINI_API_KEY,
+            aiGateway: {
+              accountId: c.env.CF_AI_GATEWAY_ACCOUNT_ID ?? "",
+              gatewayId: c.env.CF_AI_GATEWAY_ID ?? "",
+            },
+          });
+
+      // プロバイダーが利用できない場合はエラー
+      if (!llmProvider) {
+        logger.error("No LLM provider available");
+        return c.json(
+          { error: "LLMプロバイダーが設定されていません" },
+          { status: 503 },
+        );
+      }
 
       // ルーターを作成（依存性注入）
+      // 単一プロバイダーを両方のタスクに使用
       const appRouter = createAppRouter({
         db,
         characterRepository,
         dungeonRepository,
+        sessionRepository,
+        replayRepository,
+        llmProvider,
         generateId: () => crypto.randomUUID(),
       });
 
