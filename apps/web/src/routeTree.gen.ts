@@ -12,8 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SessionsIndexRouteImport } from './routes/sessions/index'
 import { Route as DungeonsIndexRouteImport } from './routes/dungeons/index'
 import { Route as CharactersIndexRouteImport } from './routes/characters/index'
+import { Route as SessionsNewRouteImport } from './routes/sessions/new'
+import { Route as SessionsIdRouteImport } from './routes/sessions/$id'
 import { Route as DungeonsIdRouteImport } from './routes/dungeons/$id'
 import { Route as CharactersNewRouteImport } from './routes/characters/new'
 import { Route as CharactersIdRouteImport } from './routes/characters/$id'
@@ -33,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SessionsIndexRoute = SessionsIndexRouteImport.update({
+  id: '/sessions/',
+  path: '/sessions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DungeonsIndexRoute = DungeonsIndexRouteImport.update({
   id: '/dungeons/',
   path: '/dungeons/',
@@ -41,6 +49,16 @@ const DungeonsIndexRoute = DungeonsIndexRouteImport.update({
 const CharactersIndexRoute = CharactersIndexRouteImport.update({
   id: '/characters/',
   path: '/characters/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsNewRoute = SessionsNewRouteImport.update({
+  id: '/sessions/new',
+  path: '/sessions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsIdRoute = SessionsIdRouteImport.update({
+  id: '/sessions/$id',
+  path: '/sessions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DungeonsIdRoute = DungeonsIdRouteImport.update({
@@ -66,8 +84,11 @@ export interface FileRoutesByFullPath {
   '/characters/$id': typeof CharactersIdRoute
   '/characters/new': typeof CharactersNewRoute
   '/dungeons/$id': typeof DungeonsIdRoute
+  '/sessions/$id': typeof SessionsIdRoute
+  '/sessions/new': typeof SessionsNewRoute
   '/characters': typeof CharactersIndexRoute
   '/dungeons': typeof DungeonsIndexRoute
+  '/sessions': typeof SessionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,8 +97,11 @@ export interface FileRoutesByTo {
   '/characters/$id': typeof CharactersIdRoute
   '/characters/new': typeof CharactersNewRoute
   '/dungeons/$id': typeof DungeonsIdRoute
+  '/sessions/$id': typeof SessionsIdRoute
+  '/sessions/new': typeof SessionsNewRoute
   '/characters': typeof CharactersIndexRoute
   '/dungeons': typeof DungeonsIndexRoute
+  '/sessions': typeof SessionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,8 +111,11 @@ export interface FileRoutesById {
   '/characters/$id': typeof CharactersIdRoute
   '/characters/new': typeof CharactersNewRoute
   '/dungeons/$id': typeof DungeonsIdRoute
+  '/sessions/$id': typeof SessionsIdRoute
+  '/sessions/new': typeof SessionsNewRoute
   '/characters/': typeof CharactersIndexRoute
   '/dungeons/': typeof DungeonsIndexRoute
+  '/sessions/': typeof SessionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,8 +126,11 @@ export interface FileRouteTypes {
     | '/characters/$id'
     | '/characters/new'
     | '/dungeons/$id'
+    | '/sessions/$id'
+    | '/sessions/new'
     | '/characters'
     | '/dungeons'
+    | '/sessions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -109,8 +139,11 @@ export interface FileRouteTypes {
     | '/characters/$id'
     | '/characters/new'
     | '/dungeons/$id'
+    | '/sessions/$id'
+    | '/sessions/new'
     | '/characters'
     | '/dungeons'
+    | '/sessions'
   id:
     | '__root__'
     | '/'
@@ -119,8 +152,11 @@ export interface FileRouteTypes {
     | '/characters/$id'
     | '/characters/new'
     | '/dungeons/$id'
+    | '/sessions/$id'
+    | '/sessions/new'
     | '/characters/'
     | '/dungeons/'
+    | '/sessions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -130,8 +166,11 @@ export interface RootRouteChildren {
   CharactersIdRoute: typeof CharactersIdRoute
   CharactersNewRoute: typeof CharactersNewRoute
   DungeonsIdRoute: typeof DungeonsIdRoute
+  SessionsIdRoute: typeof SessionsIdRoute
+  SessionsNewRoute: typeof SessionsNewRoute
   CharactersIndexRoute: typeof CharactersIndexRoute
   DungeonsIndexRoute: typeof DungeonsIndexRoute
+  SessionsIndexRoute: typeof SessionsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -157,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sessions/': {
+      id: '/sessions/'
+      path: '/sessions'
+      fullPath: '/sessions'
+      preLoaderRoute: typeof SessionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dungeons/': {
       id: '/dungeons/'
       path: '/dungeons'
@@ -169,6 +215,20 @@ declare module '@tanstack/react-router' {
       path: '/characters'
       fullPath: '/characters'
       preLoaderRoute: typeof CharactersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/new': {
+      id: '/sessions/new'
+      path: '/sessions/new'
+      fullPath: '/sessions/new'
+      preLoaderRoute: typeof SessionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/$id': {
+      id: '/sessions/$id'
+      path: '/sessions/$id'
+      fullPath: '/sessions/$id'
+      preLoaderRoute: typeof SessionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dungeons/$id': {
@@ -202,8 +262,11 @@ const rootRouteChildren: RootRouteChildren = {
   CharactersIdRoute: CharactersIdRoute,
   CharactersNewRoute: CharactersNewRoute,
   DungeonsIdRoute: DungeonsIdRoute,
+  SessionsIdRoute: SessionsIdRoute,
+  SessionsNewRoute: SessionsNewRoute,
   CharactersIndexRoute: CharactersIndexRoute,
   DungeonsIndexRoute: DungeonsIndexRoute,
+  SessionsIndexRoute: SessionsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
